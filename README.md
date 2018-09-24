@@ -266,7 +266,7 @@ sudo vim /etc/fstab
 sudo umount /nfs/minio (if you need to)
 ```
 
-### Install essential Tools on ENTRY VM
+### Install K8s/Cloud Tools on ENTRY VM
 
 **Install kubectl:**
 
