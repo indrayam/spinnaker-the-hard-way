@@ -689,6 +689,8 @@ Now, imagine if the service account logged in user `sujmuthu` has roles `code-su
 
 **How do I setup Spinnaker for my Application?**
 
+![Setting up Spinnaker for App ABC](https://s3.amazonaws.com/us-east-1-anand-files/fiat-visual-version-3.png)
+
 Let's say there is an application called _ABC_. You decide to create an App Management and App Deployment interface for this application using Spinnaker. When you create a Spinnaker Application for _ABC_, you should create two LDAP groups: 
   - _AppAdmin_: Group of users that will act as Application Admins or Release Managers
   - _AppDev_: Group consisting of all the application developers
@@ -711,6 +713,8 @@ Users belonging to _AppDev_ group:
 - Cannot deploy the binaries of _ABC_ application to the Production Infrastucture since they do not have write access to the Spinnaker Account tied to the Production Infrastructure
 - Can access and read, but not modify, the Application Attributes of the Spinnaker Application created for _ABC_
 - Can run all the Pipelines. However, they can really only run the Pipelines that are setup to run as `ABC Non-Prod SA` service account and deploy to Non-Production Infrastructure since they only have read/write privilges to that Spinnaker Account. They cannot modify any of the Pipelines!
+
+### Setting up Service Accounts
 
 Here's how to create it, since we cannot use `hal` to perform CRUD operations
 
