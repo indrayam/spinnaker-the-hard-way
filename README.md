@@ -337,7 +337,7 @@ TOKEN=$(kubectl get secret --context $CONTEXT \
 kubectl config set-credentials ${CONTEXT}-token-user --token $TOKEN
 ```
 
-### Install halyard on ENTRY VM
+### Install Halyard on ENTRY VM
 
 ```bash
 {
@@ -349,7 +349,7 @@ sudo ln -s /usr/lib/jvm/java-8-openjdk-amd64 /usr/local/java (assuming you are u
 }
 ```
 
-### Change the timezone
+### Configure the Timezone
 
 ```bash
 hal config edit --timezone 'America/New_York'
@@ -378,7 +378,7 @@ hal config provider docker-registry account add dockerhub \
     --password
 ```
 
-### HTTP Artifact Support
+### Configure HTTP Artifact Support
 
 ```bash
 {
@@ -394,7 +394,7 @@ hal config artifact http account add ${GITSCM_HTTP_ARTIFACT_ACCOUNT_NAME} \
 }
 ```
 
-### GitHub Artifact Support
+### Configure GitHub Artifact Support
 
 ```bash
 {
@@ -409,7 +409,7 @@ hal config artifact github account add $GITHUB_ARTIFACT_ACCOUNT_NAME \
 }
 ```
 
-### GCS Artifact Support
+### Configure GCS Artifact Support
 
 ```bash
 {
@@ -458,7 +458,7 @@ echo $MINIO_SECRET_KEY | hal config storage s3 edit --endpoint $ENDPOINT \
 hal config storage edit --type s3
 ```
 
-### Add Jenkins Support
+### Configure Jenkins Support
 
 ```bash
 {
@@ -472,7 +472,7 @@ echo $PASSWORD | hal config ci jenkins master add my-jenkins-master \
 }
 ```
 
-### Email Notification Support
+### Configure Email Notification Support
 
 1. Create echo-local.yml file as below:
 
@@ -498,7 +498,7 @@ spring:
 2. Copy the file into ~/.hal/default/profiles/ folder
 3. Run: `hal deploy apply --service-names echo`
 
-### Deploy Spinnaker
+### Install Spinnaker
 
 ```bash
 VERSION="1.9.3"
@@ -551,7 +551,7 @@ hal config security api edit \
     --override-base-url https://spinnakerapi-code.cisco.com
 ```
 
-### Authentication using LDAP
+### Configure LDAP Authentication
 
 ```bash
 hal config security authn ldap edit --user-dn-pattern="cn={0},OU=Employees,OU=Cisco Users" --url=ldap://ds.cisco.com:3268/DC=cisco,DC=com
@@ -577,7 +577,7 @@ ldap:
   userSearchBase: OU=Cisco Users,DC=cisco, DC=com
 ```
 
-### Authorization
+### Configure LDAP Groups for Authorizations
 
 Helpful command: `hal config security authz ldap edit --help`
 
@@ -635,7 +635,7 @@ auth:
 **Note:**
 I cannot make ldaps work in a Kubernetes environment. Keeps giving me LDAPS (LDAP over TLS) connection failed. [Reference 1](https://community.spinnaker.io/t/ldap-authentication-ldaps-protocol/386), [Reference 2](https://langui.sh/2009/03/14/checking-a-remote-certificate-chain-with-openssl/)
 
-### Spinnaker RBAC Model
+### Understanding Spinnaker RBAC Model
 
 ![Spinnaker Fiat Service](https://s3.amazonaws.com/us-east-1-anand-files/fiat-visual-version-2.png)
 
