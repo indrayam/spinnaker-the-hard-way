@@ -690,20 +690,20 @@ Now, imagine if the service account logged in user `sujmuthu` has roles `code-su
 **How do I setup Spinnaker for my Application?**
 
 Let's say there is an application called _ABC_. You decide to create an App Management and App Deployment interface for this application using Spinnaker. When you create a Spinnaker Application for _ABC_, you should create two LDAP groups: 
-  - _AppAdmins_: Group of users that will act as Application Admins or Release Managers
-  - _AppDevs_: Group consisting of all the application developers
+  - _AppAdmin_: Group of users that will act as Application Admins or Release Managers
+  - _AppDev_: Group consisting of all the application developers
 
-The Spinnaker Account tied to the Application's Production Infrastructure should be setup to give write privileges to group _AppAdmins_ ONLY. It should give read access to the group _AppDevs_. However, the Spinnaker Account tied to the Application's Non-Prod Infrastructure should be setup so that both _AppAdmins_ and _AppDevs_ can read/write to that infrastructure.
+The Spinnaker Account tied to the Application's Production Infrastructure should be setup to give write privileges to group _AppAdmin_ ONLY. It should give read access to the group _AppDev_. However, the Spinnaker Account tied to the Application's Non-Prod Infrastructure should be setup so that both _AppAdmin_ and _AppDev_ can read/write to that infrastructure.
 
-The Spinnaker Application tied to the Application _ABC_ should give read/write privileges to group _AppAdmins_ and only read privileges to group _AppDevs_. You really do not want _AppDevs_ to have the ability to muck around with the Application Attributes, like permissions. Or wily nily create new Pipelines. 
+The Spinnaker Application tied to the Application _ABC_ should give read/write privileges to group _AppAdmin_ and only read privileges to group _AppDev_. You really do not want _AppDev_ to have the ability to muck around with the Application Attributes, like permissions. Or wily nily create new Pipelines. 
 
-Two Service Accounts (`ABC Prod SA` and `ABC Non-Prod SA`) should be created to run the Pipelines in the Application _ABC_. All Pipelines that interact with the Production Infrastructure should be setup with the `ABC Prod SA` service account that is a member of the group _AppAdmins_ ONLY. All other Pipelines that interact with Non-Production Infrastructure should be setup with the `ABC Non-Prod SA` Service Account which should be member of the group _AppAdmins_ and _AppDevs_. What does that mean? A user belonging to _AppAdmins_ and _AppDevs_ group will be the only ones who will be able to access both `ABC Prod SA` or `ABC Non-Prod SA` service accounts and set all the Pipelines up with the proper `Run As User` setting. A user belonging to _AppDevs_ group will not have access to any of these Service Accounts!  
+Two Service Accounts (`ABC Prod SA` and `ABC Non-Prod SA`) should be created to run the Pipelines in the Application _ABC_. All Pipelines that interact with the Production Infrastructure should be setup with the `ABC Prod SA` service account that is a member of the group _AppAdmin_ ONLY. All other Pipelines that interact with Non-Production Infrastructure should be setup with the `ABC Non-Prod SA` Service Account which should be member of the group _AppAdmin_ and _AppDev_. What does that mean? A user belonging to _AppAdmin_ and _AppDev_ group will be the only ones who will be able to access both `ABC Prod SA` or `ABC Non-Prod SA` service accounts and set all the Pipelines up with the proper `Run As User` setting. A user belonging to _AppDev_ group will not have access to any of these Service Accounts!  
 
-In Summary, Users belonging to _AppAdmins_ group:
+In Summary, Users belonging to _AppAdmin_ group:
 
 - Can deploy the binaries of _ABC_ application, since they have write access to the Spinnaker Account 
 - Can access and modify Spinnaker Application Attributes since they have read/write privileges to the Spinnaker Application
-- Can create and modify all the Pipelines created to run as `ABC Prod SA` service account. If the User happens to belong to _AppDevs_ group as well, they can modify all the Pipelines created to run as `ABC Prod SA` and `ABC Non-Prod SA` service accounts. Why? Since `ABC Prod SA` service account is a member of _AppAdmins_ while `ABC Non-Prod SA` is a member of _AppAdmins_ and _AppDevs_. Remember, a logged in User has access to a Service Account if, and only if, the user has _every_ role the service account has! As a corollary, if the user belongs to ONLY _AppAdmins_ group, they will not be able to modify the Pipelines which are setup to run as `ABC Non-Prod SA` service account.
+- Can create and modify all the Pipelines created to run as `ABC Prod SA` service account. If the User happens to belong to _AppDev_ group as well, they can modify all the Pipelines created to run as `ABC Prod SA` and `ABC Non-Prod SA` service accounts. Why? Since `ABC Prod SA` service account is a member of _AppAdmin_ while `ABC Non-Prod SA` is a member of _AppAdmin_ and _AppDev_. Remember, a logged in User has access to a Service Account if, and only if, the user has _every_ role the service account has! As a corollary, if the user belongs to ONLY _AppAdmin_ group, they will not be able to modify the Pipelines which are setup to run as `ABC Non-Prod SA` service account.
 
 Users belonging to _AppDev_ group:
 
