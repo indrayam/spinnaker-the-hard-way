@@ -1,4 +1,6 @@
-# Spinnaker Install Notes on Kubernetes
+# Spinnaker The Hard Way
+
+### Spinnaker Concepts
 
 As the documentation states:
 
@@ -139,13 +141,26 @@ If you had a handful of Applications (with Microservices) to manage in a single 
   Is an Instance healthy, unhealthy, disabled etc.
 
 
-### Pre-requisites
-- Installed a 1 Master, 5 Node (Ubuntu 16.04) Kubernetes Cluster running the latest 1.11.2 version
-- Create a standalone VM (Ubuntu 16.04) to use for two purposes: Running Halyard and Running TCP Proxy for my Kubernetes Cluster. So when I refer to VM running Nginx or TCP Proxy or Halyard, I am talking about this 6th Node
+### Spinnaker Installation Pre-requisites
 
-## [Run on VM running Nginx L4 TCP Proxy] 
+- Spinnaker will be installed on Kubernetes
+- Kubernetes Cluster is already avaialble. My setup highlights:
+  - One VM acting as Control Plane Master (4vCPUx8GB)
+  - 5 Cluster Nodes (4vCPUx8GB) each running Ubuntu 16.04
+  - Kubernetes version: 1.11.2 version
+- Use an additional VM running Ubuntu 16.04 for the following purposes: 
+  - Running Halyard
+  - Running TCP Proxy for my Kubernetes Cluster
+  - Run NFS Server for Minion installation
 
-### Get Nginx updated
+You can choose to install each on a separate VM. However, I decided to keep it simple and use a single VM for that. So when I refer to VM running Nginx as a TCP Proxy or Halyard or NFS Server, I am talking about this Node. Let's call it `ENTRY` VM.
+
+I decided to run it on my internal OpenStack cluster. You can follow this along on any Public Cloud provider offering IaaS. [Digital Ocean](https://www.digitalocean.com/) would be a good choice.
+
+### Get Nginx updated on ENTRY VM
+
+Update Nginx to the latest version offered by `nginx.org`
+
 ```bash
 sudo vim /etc/nginx/tcppassthrough.conf (Update the Upstream Port numbers for 80 and 443)
 
@@ -162,9 +177,11 @@ sudo apt-get remove nginx #Remove existing Nginx install (if any)
 sudo apt-get install nginx
 ```
 
-### Update /etc/nginx/nginx.conf with these changes to the http block...
+### Update /etc/nginx/nginx.conf on ENTRY VM
 
 ```bash
+{
+    ...
     #include /etc/nginx/conf.d/*.conf;
     #include /etc/nginx/sites-enabled/*;
 }
@@ -172,7 +189,7 @@ sudo apt-get install nginx
 include /etc/nginx/tcppassthrough.conf;
 ```
 
-### TCP LB  and SSL passthrough for backend ##
+### TCP LB and SSL passthrough on ENTRY VM
 
 ```bash
 
@@ -218,9 +235,7 @@ sudo systemctl stop nginx
 sudo systemctl start nginx
 ```
 
-## [Run on VM that will be the NFS Server]
-
-### Setup NFS Server
+### Setup NFS Server on ENTRY VM
 
 
 ```bash
@@ -234,9 +249,7 @@ sudo vim /etc/exports
 sudo systemctl restart nfs-kernel-server
 ```
 
-## [Run on all Kubernetes Nodes]
-
-### Setup NFS Client
+### Setup NFS Client on all 5 Kubernetes Cluster Nodes
 
 ```bash
 sudo apt-get install nfs-common
@@ -253,9 +266,9 @@ sudo vim /etc/fstab
 sudo umount /nfs/minio (if you need to)
 ```
 
-## [Run on Halyard VM]
+### Install essential Tools on ENTRY VM
 
-### Install kubectl
+**Install kubectl:**
 
 ```bash
 curl -s https://packages.cloud.google.com/apt/doc/apt-key.gpg | apt-key add -
@@ -264,7 +277,7 @@ deb http://apt.kubernetes.io/ kubernetes-xenial main
 EOF
 ```
 
-### Install gcloud
+**Install gcloud:**
 
 ```bash
 {
@@ -283,7 +296,7 @@ EOF
 
 ```
 
-### Fix K8s prompts
+**Install fix k8s prompts:**
 
 ```bash
 cd $HOME
@@ -304,21 +317,9 @@ sudo ln -s /opt/openshift/oc /usr/local/bin/oc
 }
 ```
 
-Make sure .kube/config contains information about the Kubernetes cluster you would be installing stuff into
+**Create a Namespace for Spinnaker Microservices:**
 
-## [Run on Halyard VM]
-
-```bash
-{
-cd ~/src
-tar -xvzf hal.tar.gz (get it from Dropbox)
-sudo bash InstallHalyard.sh
-dpkg -l | grep -i openjdk
-sudo ln -s /usr/lib/jvm/java-8-openjdk-amd64 /usr/local/java (assuming you are using openjdk)
-}
-```
-
-### Create Spinnaker Kubernetes v2 Cloud Provider: Setup Kubernetes Cluster
+Make sure `.kube/config` contains information about the Kubernetes cluster you would be installing Spinnaker into
 
 ```bash
 cd ~/src
@@ -336,175 +337,15 @@ TOKEN=$(kubectl get secret --context $CONTEXT \
 kubectl config set-credentials ${CONTEXT}-token-user --token $TOKEN
 ```
 
-### Add Kubernetes Account
+### Install halyard on ENTRY VM
 
 ```bash
 {
-hal config provider kubernetes account add cae-np-alln-hcn \
-    --provider-version v2 \
-    --context cae-np-alln-hcn
-
-hal config provider kubernetes account add cae-prd-rcdn-hcn \
-    --provider-version v2 \
-    --context cae-np-alln-hcn
-
-hal config provider kubernetes account add cae-np-rtp-udeploy \
-    --provider-version v2 \
-    --context cae-np-rtp-udeploy   
-}
-hal config features edit --artifacts true
-```
-
-### Choose Environment
-
-```bash
-hal config deploy edit --type distributed --account-name spinnaker-code
-```
-
-### Persistent Storage
-
-```bash
 cd ~/src
-vim ./minio-standalone-pv.yml (Set the IP address of the NFS server)
-k apply -f ./minio-standalone-pv.yml
-k apply -f ./minio-standalone-pvc.yml
-k apply -f ./minio-standalone-deployment.yml
-vim ./minio-standalone-service.yml (Set the Service Type to Cluster IP)
-k apply -f ./minio-standalone-service.yml
-{
-MINIO_ACCESS_KEY="NQGLI04VLERHGQI8X7SW"
-MINIO_SECRET_KEY="4hIXeYg5I0WS15tOdCG7PAHVq4YiaHGJp2w3QwCC"
-ENDPOINT="http://minio-service:9000"
-echo $MINIO_SECRET_KEY | hal config storage s3 edit --endpoint $ENDPOINT \
-    --access-key-id $MINIO_ACCESS_KEY \
-    --secret-access-key
-}
-hal config storage edit --type s3
-```
-
-### Deploy Spinnaker
-
-```bash
-VERSION="1.9.0"
-hal config version edit --version $VERSION
-hal deploy apply
-cd ~/.hal/default/profiles
-vim front50-local.yml (add: spinnaker.s3.versioning: false)
-hal deploy apply
-```
-
-### Install Ingress Controller, cert-manager
-
-```bash
-k apply -f contour-deployment-rbac.yml
-k -n heptio-contour get svc
-```
-
-### Cert Manager (Self-signed)
-
-```bash
-openssl genrsa -out ca.key 4096
-openssl req -x509 -new -nodes -key ca.key -subj "/CN=Cisco CoDE Team" -days 3650 -reqexts v3_req -extensions v3_ca -out ca.crt
-k create secret tls ca-key-pair --cert=ca.crt --key=ca.key --namespace=cert-manager
-k apply -f ./ca-clusterissuer.yml
-```
-
-### Switch Namespace to Spinnaker
-
-```bash
-k apply -f ./spinnaker-code-ingress-https.yml -n spinnaker
-k apply -f ./spinnakerapi-code-ingress-https.yml -n spinnaker
-```
-
-### Cert Manager (LetsEncrypt)
-
-```bash
-k apply -f ./letsencrypt-staging.yml
-k apply -f ./letsencrypt-prod.yml
-```
-
-### Update Ingress
-
-```bash
-k apply -f ./spinnaker-code-ingress-https.yml
-k apply -f ./spinnakerapi-code-ingress-https.yml
-
-hal config security ui edit \
-    --override-base-url http://spinnaker-code.cisco.com
-
-hal config security ui edit \
-    --override-base-url https://spinnaker-code.cisco.com
-
-hal config security api edit \
-    --override-base-url http://spinnakerapi-code.cisco.com
-
-hal config security api edit \
-    --override-base-url https://spinnakerapi-code.cisco.com
-```
-
-### Enable Security
-
-```bash
-hal config security authn ldap edit --user-dn-pattern="cn={0},OU=Employees,OU=Cisco Users" --url=ldap://ds.cisco.com:3268/DC=cisco,DC=com
-# Note, I had to remove the space betweeen Cisco and Users when running this command and later edit the ~/.hal/config file 
-# by adding the space
-hal deploy apply
-```
-
-Here's the problem with using just the `--user-dn-pattern`. As the documentation says, it is somewhat simplistic. In order to search a broader base of users who may exist in separate `OU` under the root, using `--user-search-filter` and `--user-search-base` is the way to go. Two quick caveats:
-
-1. When you use `--user-search-filter` and `--user-search-base`, you will get an error while trying to login saying "This LDAP operation needs to be run with proper binding". If you try to add `managerDn:` and `managerPassword:` like you do in Fiat, `hal` throws an error.
-2. When you add `userSearchFilter:` values, do not add an extra single quotes around `'{0}'`. So, this is WRONG: `userSearchFilter: (&(objectClass=user)(|(distinguishedName=CN='{0}', OU=Generics, OU=Cisco Users, DC=cisco, DC=com)(distinguishedName=CN='{0}', OU=Employees, OU=Cisco Users, DC=cisco, DC=com)))`. It is subtle, but it can cause a lot of headache. The right way to is to remove the single quotes around the `{0}` entry
-
-So, to get around the `hal` constraints, you create `gate-local.yml` file with content like this:
-
-```bash
-ldap:
-  enabled: true
-  url: ldap://ds.cisco.com:3268
-  managerDn: dft-ds.gen@cisco.com
-  managerPassword: <password>
-  userSearchFilter: (&(objectClass=user)(|(distinguishedName=CN={0}, OU=Generics, OU=Cisco Users, DC=cisco, DC=com)(distinguishedName=CN={0}, OU=Employees, OU=Cisco Users, DC=cisco, DC=com)))
-  userSearchBase: OU=Cisco Users,DC=cisco, DC=com
-```
-
-### Add Kubernetes Accounts
-
-```bash
-hal config provider kubernetes account add cae-np-rtp-hcn --provider-version v2 --context cae-np-rtp_hcn
-hal config provider kubernetes account add cae-np-alln-hcn --provider-version v2 --context cae-np-alln_hcn
-hal config provider kubernetes account add cae-prd-rcdn-hcn --provider-version v2 --context cae-prd-rcdn_hcn
-
-hal config provider docker-registry account add ech-hcn --address containers.cisco.com \
-    --repositories "codeplayground/hello-udeploy-cloud-native-web-app" \
-    --username "anasharm"  \
-    --password "<password>"
-```
-
-### Authentication UI
-
-```html
-<html><head><title>Login Page</title></head><body onload='document.f.username.focus();'>
-<h3>Login with Username and Password</h3><form name='f' action='/login' method='POST'>
-<table>
-    <tr><td>User:</td><td><input type='text' name='username' value=''></td></tr>
-    <tr><td>Password:</td><td><input type='password' name='password'/></td></tr>
-    <tr><td colspan='2'><input name="submit" type="submit" value="Login"/></td></tr>
-</table>
-</form></body></html>
-```
-
-### Add Jenkins Support
-
-```bash
-{
-hal config ci jenkins enable
-
-PASSWORD='<password>'
-echo $PASSWORD | hal config ci jenkins master add my-jenkins-master \
-    --address https://ci6.cisco.com \
-    --username jenkins-ci.gen \
-    --password
+tar -xvzf hal.tar.gz (get it from Dropbox)
+sudo bash InstallHalyard.sh
+dpkg -l | grep -i openjdk
+sudo ln -s /usr/lib/jvm/java-8-openjdk-amd64 /usr/local/java (assuming you are using openjdk)
 }
 ```
 
@@ -515,6 +356,27 @@ hal config edit --timezone 'America/New_York'
 ```
 
 Not sure if this worked though. Not at the UI level
+
+### Configure Spinnaker Kubernetes Account for Installation
+
+```bash
+hal config provider kubernetes account add spinnaker-code --provider-version v2 --context spinnaker-code
+
+hal config features edit --artifacts true
+
+hal config deploy edit --type distributed --account-name spinnaker-code
+
+```
+
+### Configure Spinnaker Account for Docker Registry
+
+```bash
+hal config provider docker-registry account add dockerhub \
+    --address index.docker.io \
+    --repositories "library/nginx indrayam/debug-container indrayam/kubia" \
+    --username indrayam \
+    --password
+```
 
 ### HTTP Artifact Support
 
@@ -575,6 +437,41 @@ hal config artifact github account add $GITHUB_ARTIFACT_ACCOUNT_NAME \
 }
 ```
 
+### Configure Persistent Storage (Minio)
+
+```bash
+cd ~/src
+vim ./minio-standalone-pv.yml (Set the IP address of the NFS server)
+k apply -f ./minio-standalone-pv.yml
+k apply -f ./minio-standalone-pvc.yml
+k apply -f ./minio-standalone-deployment.yml
+vim ./minio-standalone-service.yml (Set the Service Type to Cluster IP)
+k apply -f ./minio-standalone-service.yml
+{
+MINIO_ACCESS_KEY="<access-key>"
+MINIO_SECRET_KEY="<secret-key>"
+ENDPOINT="http://minio-service:9000"
+echo $MINIO_SECRET_KEY | hal config storage s3 edit --endpoint $ENDPOINT \
+    --access-key-id $MINIO_ACCESS_KEY \
+    --secret-access-key
+}
+hal config storage edit --type s3
+```
+
+### Add Jenkins Support
+
+```bash
+{
+hal config ci jenkins enable
+
+PASSWORD='<password>'
+echo $PASSWORD | hal config ci jenkins master add my-jenkins-master \
+    --address https://ci6.cisco.com \
+    --username jenkins-ci.gen \
+    --password
+}
+```
+
 ### Email Notification Support
 
 1. Create echo-local.yml file as below:
@@ -601,7 +498,86 @@ spring:
 2. Copy the file into ~/.hal/default/profiles/ folder
 3. Run: `hal deploy apply --service-names echo`
 
-### Spinnaker Authorization
+### Deploy Spinnaker
+
+```bash
+VERSION="1.9.3"
+hal config version edit --version $VERSION
+hal deploy apply
+cd ~/.hal/default/profiles
+vim front50-local.yml (add: spinnaker.s3.versioning: false)
+hal deploy apply
+```
+
+### Configure ENTRY VM to route Spinnaker URLs to spin-deck and spin-gate Services
+
+**Install Heptio Contour Ingress Controller:**
+
+```bash
+k apply -f contour-deployment-rbac.yml
+k -n heptio-contour get svc
+```
+
+**Cert-Manager (self-signed):**
+
+```bash
+openssl genrsa -out ca.key 4096
+openssl req -x509 -new -nodes -key ca.key -subj "/CN=Cisco CoDE Team" -days 3650 -reqexts v3_req -extensions v3_ca -out ca.crt
+k create secret tls ca-key-pair --cert=ca.crt --key=ca.key --namespace=cert-manager
+k apply -f ./ca-clusterissuer.yml
+```
+
+**Install Ingress Objects:**
+
+```bash
+k apply -f ./spinnaker-code-ingress-https.yml -n spinnaker
+k apply -f ./spinnakerapi-code-ingress-https.yml -n spinnaker
+```
+
+### Update Base URLs for Spinnaker UI (spin-deck) and API Gateway (spin-gate)
+
+```bash
+
+hal config security ui edit \
+    --override-base-url http://spinnaker-code.cisco.com
+
+hal config security ui edit \
+    --override-base-url https://spinnaker-code.cisco.com
+
+hal config security api edit \
+    --override-base-url http://spinnakerapi-code.cisco.com
+
+hal config security api edit \
+    --override-base-url https://spinnakerapi-code.cisco.com
+```
+
+### Authentication using LDAP
+
+```bash
+hal config security authn ldap edit --user-dn-pattern="cn={0},OU=Employees,OU=Cisco Users" --url=ldap://ds.cisco.com:3268/DC=cisco,DC=com
+# Note, I had to remove the space betweeen Cisco and Users when running this command and later edit the ~/.hal/config file 
+# by adding the space
+hal deploy apply
+```
+
+Here's the problem with using just the `--user-dn-pattern`. As the documentation says, it is somewhat simplistic. In order to search a broader base of users who may exist in separate `OU` under the root, using `--user-search-filter` and `--user-search-base` is the way to go. Two quick caveats:
+
+1. When you use `--user-search-filter` and `--user-search-base`, you will get an error while trying to login saying "This LDAP operation needs to be run with proper binding". If you try to add `managerDn:` and `managerPassword:` like you do in Fiat, `hal` throws an error.
+2. When you add `userSearchFilter:` values, do not add an extra single quotes around `'{0}'`. So, this is WRONG: `userSearchFilter: (&(objectClass=user)(|(distinguishedName=CN='{0}', OU=Generics, OU=Cisco Users, DC=cisco, DC=com)(distinguishedName=CN='{0}', OU=Employees, OU=Cisco Users, DC=cisco, DC=com)))`. It is subtle, but it can cause a lot of headache. The right way to is to remove the single quotes around the `{0}` entry
+
+So, to get around the `hal` constraints, you create `gate-local.yml` file with content like this:
+
+```bash
+ldap:
+  enabled: true
+  url: ldap://ds.cisco.com:3268
+  managerDn: dft-ds.gen@cisco.com
+  managerPassword: <password>
+  userSearchFilter: (&(objectClass=user)(|(distinguishedName=CN={0}, OU=Generics, OU=Cisco Users, DC=cisco, DC=com)(distinguishedName=CN={0}, OU=Employees, OU=Cisco Users, DC=cisco, DC=com)))
+  userSearchBase: OU=Cisco Users,DC=cisco, DC=com
+```
+
+### Authorization
 
 Helpful command: `hal config security authz ldap edit --help`
 
