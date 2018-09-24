@@ -637,7 +637,7 @@ I cannot make ldaps work in a Kubernetes environment. Keeps giving me LDAPS (LDA
 
 ### Understanding Spinnaker RBAC Model
 
-![Spinnaker Fiat Service](https://s3.amazonaws.com/us-east-1-anand-files/fiat-visual-version-2.png)
+![Spinnaker Fiat Service](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-rbac-overall.png)
 
 Spinnaker's Fiat offers Authorization functionality.
 
@@ -689,7 +689,7 @@ Now, imagine if the service account logged in user `sujmuthu` has roles `code-su
 
 **How do I setup Spinnaker for my Application?**
 
-![Setting up Spinnaker for App ABC](https://s3.amazonaws.com/us-east-1-anand-files/fiat-visual-version-3.png)
+![Setting up Spinnaker for App ABC](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-setup-for-app.png)
 
 Let's say there is an application called _ABC_. You decide to create an App Management and App Deployment interface for this application using Spinnaker. When you create a Spinnaker Application for _ABC_, you should create two LDAP groups: 
   - _AppAdmin_: Group of users that will act as Application Admins or Release Managers
