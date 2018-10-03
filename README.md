@@ -414,7 +414,7 @@ hal config artifact github account add $GITHUB_ARTIFACT_ACCOUNT_NAME \
 ```bash
 {
     SERVICE_ACCOUNT_NAME='spinnaker-gce-account'
-    SERVICE_ACCOUNT_DEST='/home/ubuntu/.config/gcloud/evident-wind-163400-spinnaker.json'
+    SERVICE_ACCOUNT_DEST='~/.config/gcloud/evident-wind-163400-spinnaker.json'
     
     #gcloud iam service-accounts create $SERVICE_ACCOUNT_NAME --display-name $SERVICE_ACCOUNT_NAME
     
@@ -424,8 +424,9 @@ hal config artifact github account add $GITHUB_ARTIFACT_ACCOUNT_NAME \
     
     PROJECT=$(gcloud info --format='value(config.project)')
 
-    gcloud projects add-iam-policy-binding $PROJECT \
-        --role roles/storage.admin --member serviceAccount:$SA_EMAIL
+    gcloud projects get-iam-policy $PROJECT
+    # If the roles/storage.admin is not there, set it by running the following command:
+    #gcloud projects add-iam-policy-binding $PROJECT --role roles/storage.admin --member serviceAccount:$SA_EMAIL
 
     #mkdir -p $(dirname $SERVICE_ACCOUNT_DEST)
 
