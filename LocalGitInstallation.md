@@ -79,7 +79,7 @@ yarn -v
 
 Here are all the Spinnaker Microservices that are documented in [Spinnaker Reference Docs](https://www.spinnaker.io/reference/architecture/#spinnaker-microservices)
 
-Open each of the links in a separate tab and fork the repo into your personal repo:
+Open each of the links in a separate tab and fork the repo into your personal repo. **Make sure you have your SSH keys setup to access each of these Git repos**:
 
 - [Deck](https://github.com/spinnaker/deck)
 - [Gate](https://github.com/spinnaker/gate)
@@ -93,6 +93,12 @@ Open each of the links in a separate tab and fork the repo into your personal re
 - [Kayenta](https://github.com/spinnaker/kayenta)
 - [Halyard](https://github.com/spinnaker/halyard)
 
+## Final Halyard Commands
 
+```bash
+hal config deploy edit --type localgit --git-origin-user=indrayam
+hal config version edit --version branch:upstream/master
+hal deploy apply
+```
 
 
