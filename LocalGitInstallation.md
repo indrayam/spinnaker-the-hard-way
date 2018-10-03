@@ -101,4 +101,22 @@ hal config version edit --version branch:upstream/master
 hal deploy apply
 ```
 
+## Handle Microservices
 
+First things first, run [Stop All Microservices](stop-all.sh). Once you have your laptop back (:wink:), run [Start Core Services](start-core.sh)
+
+## Setup IntelliJ
+
+Repeat these steps for each Microservice!
+
+```bash
+cd ~/dev/spinnaker/<microservice>/
+./gradlew idea
+```
+
+If something goes wrong, run the following to clean all IntelliJ related files/folders:
+
+```bash
+git clean -dnxf -e '*.iml' -e '*.ipr' -e '*.iws'
+git clean -dxf -e '*.iml' -e '*.ipr' -e '*.iws'
+```
