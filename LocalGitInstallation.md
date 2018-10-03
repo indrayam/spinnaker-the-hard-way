@@ -93,17 +93,38 @@ Open each of the links in a separate tab and fork the repo into your personal re
 - [Kayenta](https://github.com/spinnaker/kayenta)
 - [Halyard](https://github.com/spinnaker/halyard)
 
-## Final Halyard Commands
+## Halyard Commands to Wrap Up
 
 ```bash
 hal config deploy edit --type localgit --git-origin-user=indrayam
 hal config version edit --version branch:upstream/master
+# Run the following commands to enable Fiat Authn and Enable LDAP as the Authn medium
+hal config security authn ldap enable
+hal config security authn ldap edit --user-dn-pattern="cn={0},OU=Employees,OU=CiscoUsers" --url=ldap://ds.cisco.com:3268/DC=cisco,DC=com
+# If the LDAP settings need to be updated, update the ~/.spinnaker/fiat-local.yml file
+
+# Run the following commands to enable Fiat Authz and use LDAP as Role Provider
+hal config security authz enable
+hal config security authz ldap edit \
+    --url ldap://ds.cisco.com:3268/dc=cisco,dc=com \
+    --manager-dn 'dft-ds.gen@cisco.com' \
+    --manager-password \
+    --user-dn-pattern cn={0},ou=CiscoUsers \
+    --group-search-base OU=Standard,OU=CiscoGroups,dc=cisco,dc=com \
+    --group-search-filter "(member{0})" \
+    --group-role-attributes cn
+# If this command fails, update the ~/.spinnaker/gate-local.yml file
 hal deploy apply
 ```
 
 ## Handle Microservices
 
-First things first, run [Stop All Microservices](stop-all.sh). Once you have your laptop back (:wink:), run [Start Core Services](start-core.sh)
+First things first:
+
+- Run [Stop All Microservices](stop-all.sh)
+- Once you have your laptop back (:wink:), run [Start Core Services](start-core.sh). Your "core" set of services might be different from mine
+- OPTIONAL: [Stop Core Services](stop-core.sh)
+
 
 ## Setup IntelliJ
 
@@ -120,3 +141,7 @@ If something goes wrong, run the following to clean all IntelliJ related files/f
 git clean -dnxf -e '*.iml' -e '*.ipr' -e '*.iws'
 git clean -dxf -e '*.iml' -e '*.ipr' -e '*.iws'
 ```
+
+## Useful Commands/Hacks
+
+- `hal deploy apply --service-names deck, fiat, gate, clouddriver, orca, front50`
