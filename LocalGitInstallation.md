@@ -13,7 +13,7 @@
 ## Install Halyard
 
 ```bash
-mkdir ~/spinnaker-dev
+cd ~/
 curl -O https://raw.githubusercontent.com/spinnaker/halyard/master/install/macos/InstallHalyard.sh
 sudo bash InstallHalyard.sh
 rm InstallHalyard.sh
