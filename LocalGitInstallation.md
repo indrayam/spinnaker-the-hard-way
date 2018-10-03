@@ -56,4 +56,18 @@ hal config features edit --artifacts true
 - **yarn**
 > `npm install -g yarn` (Version running on my laptop: 1.9.4)
 
+Make sure all the pieces are installed by running the following:
+
+```bash
+{
+git --version
+curl --version
+netcat -V
+/usr/local/Cellar/redis/4.0.11/bin/redis-server -v
+java -version
+node -v
+yarn -v
+}
+```
+
 
