@@ -5,6 +5,11 @@
 - Installed on my Mac running macOS Sierra (10.12.6)
 - MacBook Pro (15" 2016); 16 GB RAM; 2.6 GHz Intel Core i7
 
+## Assumptions
+
+- You have a GitHub account
+- You have configured your laptop to access repos in GitHub over SSH. References: [1](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/) and [2](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/)
+
 ## Install Halyard
 
 ```bash
@@ -69,5 +74,6 @@ node -v
 yarn -v
 }
 ```
+
 
 
