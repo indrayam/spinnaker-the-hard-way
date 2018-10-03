@@ -75,5 +75,24 @@ yarn -v
 }
 ```
 
+## Fork Spinnaker Microservices
+
+Here are all the Spinnaker Microservices that are documented in [Spinnaker Reference Docs](https://www.spinnaker.io/reference/architecture/#spinnaker-microservices)
+
+Open each of the links in a separate tab and fork the repo into your personal repo:
+
+- [Deck](https://github.com/spinnaker/deck)
+- [Gate](https://github.com/spinnaker/gate)
+- [Orca](https://github.com/spinnaker/orca)
+- [Clouddriver](https://github.com/spinnaker/clouddriver)
+- [Front50](https://github.com/spinnaker/front50)
+- [Rosco](https://github.com/spinnaker/rosco)
+- [Igor](https://github.com/spinnaker/igor)
+- [Echo](https://github.com/spinnaker/echo)
+- [Fiat](https://github.com/spinnaker/fiat)
+- [Kayenta](https://github.com/spinnaker/kayenta)
+- [Halyard](https://github.com/spinnaker/halyard)
+
+
 
 
