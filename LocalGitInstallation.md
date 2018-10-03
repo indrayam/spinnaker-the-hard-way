@@ -18,11 +18,12 @@ rm InstallHalyard.sh
 
 ```bash
 SERVICE_ACCOUNT_NAME='spinnaker-gce-account'
-SERVICE_ACCOUNT_DEST='~/.config/gcloud/evident-wind-163400-spinnaker.json'
+SERVICE_ACCOUNT_DEST='~/.config/gcloud/spinnaker-gce-account.json'
+gcloud iam service-accounts create $SERVICE_ACCOUNT_NAME --display-name $SERVICE_ACCOUNT_NAME
 SA_EMAIL=$(gcloud iam service-accounts list --filter="displayName:$SERVICE_ACCOUNT_NAME" --format='value(email)')
 PROJECT=$(gcloud info --format='value(config.project)')
-gcloud projects get-iam-policy $PROJECT
-#gcloud projects add-iam-policy-binding $PROJECT --role roles/storage.admin --member serviceAccount:$SA_EMAIL
+#gcloud projects get-iam-policy $PROJECT
+gcloud projects add-iam-policy-binding $PROJECT --role roles/storage.admin --member serviceAccount:$SA_EMAIL
 gcloud iam service-accounts keys create $SERVICE_ACCOUNT_DEST --iam-account $SA_EMAIL
 BUCKET_LOCATION=us
 hal config storage gcs edit --project $PROJECT --bucket-location $BUCKET_LOCATION --json-path $SERVICE_ACCOUNT_DEST
@@ -47,7 +48,7 @@ hal config features edit --artifacts true
 - **netcat**
 > `brew install netcat; 0.7.1` (Version running on my laptop: 0.7.1)
 - **redis-server**
-> `brew install redis` (Version running on my laptop: 4.0.11)
+> `brew install redis; brew services start redis` (Version running on my laptop: 4.0.11)
 - **java**
 > Downloaded directly from Oracle (Version running on my laptop: 1.8.0_31)
 - **node**
