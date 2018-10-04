@@ -1,6 +1,6 @@
 # Spinnaker The Hard Way
 
-### Spinnaker Concepts
+### Spinnaker Concepts [Testing PR Features]
 
 As the documentation states:
 
