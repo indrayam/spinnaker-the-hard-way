@@ -1,6 +1,6 @@
 # Spinnaker The Hard Way
 
-### Spinnaker Concepts (Testing for Sujatha. PLS REMOVE)
+### Spinnaker Concepts
 
 As the documentation states:
 
