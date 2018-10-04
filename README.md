@@ -1,4 +1,4 @@
-# Spinnaker The Hard Way (1)
+# Spinnaker The Hard Way
 
 ### Spinnaker Concepts
 
