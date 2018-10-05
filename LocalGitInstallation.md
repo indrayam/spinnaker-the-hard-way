@@ -98,7 +98,10 @@ Open each of the links in a separate tab and fork the repo into your personal re
 
 **OPTION 2:**
 
-Run the [Setup Forks](spin-scripts/setup-forks.sh)
+Run the [Setup Forks](spin-scripts/setup-forks.sh) script. However, the script assumes that you have the following on your latop:
+
+- [Hub CLI](https://hub.github.com/)
+- Configure `hub` CLI so that it knows your GitHub username and GitHub Personal Token
 
 ## Halyard Commands to Wrap Up
 
