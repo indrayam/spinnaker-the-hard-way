@@ -7,6 +7,18 @@ I created this document after following the document titled ["Getting Set Up for
 - Installed on my Mac running macOS Sierra (10.12.6)
 - MacBook Pro (15" 2016); 16 GB RAM; 2.6 GHz Intel Core i7
 
+## Key File/Folder Locations
+
+- `~/.hal` 
+> This is the folder where `hal` stores its configuration(s) for the Spinnaker deployment on your laptop.
+- `~/.spinnaker` 
+> This is the folder that your Spinnaker microservices read from. `hal deploy apply` generates files in this folder for the individual microservices.
+- `~/dev/spinnaker` 
+> This is the folder where we will be forking and cloning all the Spinnaker microservices. `hal` command will create additional folders here: 
+> - `logs` where the log and error files for each microservice that's running is stored
+> - `scripts` where the start/stop scripts for each microservice is stored
+> -`*.pid` files for each microservice that's running
+
 ## Assumptions
 
 - You have a GitHub account
@@ -105,15 +117,25 @@ gsutil rm -r gs://<spin-bucket-name>
 Time to make sure you are ready to interact with Google Cloud Storage. Here are the commands I ran to get things setup.
 
 ```bash
+{
 SERVICE_ACCOUNT_NAME='spinnaker-gce-account'
-SERVICE_ACCOUNT_DEST='~/.config/gcloud/spinnaker-gce-account.json'
+SERVICE_ACCOUNT_DEST='/Users/anasharm/.config/gcloud/spinnaker-gce-account.json'
+# If the Service Account already exist, running the command again will simply throw an error. Ignore it
 gcloud iam service-accounts create $SERVICE_ACCOUNT_NAME --display-name $SERVICE_ACCOUNT_NAME
 SA_EMAIL=$(gcloud iam service-accounts list --filter="displayName:$SERVICE_ACCOUNT_NAME" --format='value(email)')
 PROJECT=$(gcloud info --format='value(config.project)')
-#gcloud projects get-iam-policy $PROJECT
+# Run this command and look for "spinnaker-gce-account" as a member of the project with a role of "roles/storage.admin"
+# gcloud projects get-iam-policy $PROJECT | grep -i --context=2 "roles/storage.admin"
+# If it does, you can skip this next command. However, running the command will do no harm
 gcloud projects add-iam-policy-binding $PROJECT --role roles/storage.admin --member serviceAccount:$SA_EMAIL
 gcloud iam service-accounts keys create $SERVICE_ACCOUNT_DEST --iam-account $SA_EMAIL
 BUCKET_LOCATION=us
+}
+```
+
+If everything looks good, run the following commands to configure Storage Service. Here's an interesting observation. Prior to running the following command, `~/.hal` folder has no `config` file. There is no `~/.spinnaker` folder either yet.
+
+```bash
 hal config storage gcs edit --project $PROJECT --bucket-location $BUCKET_LOCATION --json-path $SERVICE_ACCOUNT_DEST
 hal config storage edit --type gcs
 ```
