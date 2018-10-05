@@ -79,6 +79,8 @@ yarn -v
 
 Here are all the Spinnaker Microservices that are documented in [Spinnaker Reference Docs](https://www.spinnaker.io/reference/architecture/#spinnaker-microservices)
 
+**OPTION 1:**
+
 Open each of the links in a separate tab and fork the repo into your personal repo. **Make sure you have your SSH keys setup to access each of these Git repos**:
 
 - [Deck](https://github.com/spinnaker/deck)
@@ -92,6 +94,11 @@ Open each of the links in a separate tab and fork the repo into your personal re
 - [Fiat](https://github.com/spinnaker/fiat)
 - [Kayenta](https://github.com/spinnaker/kayenta)
 - [Halyard](https://github.com/spinnaker/halyard)
+
+
+**OPTION 2:**
+
+Run the [Setup Forks](spin-scripts/setup-forks.sh)
 
 ## Halyard Commands to Wrap Up
 
@@ -121,9 +128,9 @@ hal deploy apply
 
 First things first:
 
-- Run [Stop All Microservices](stop-all.sh)
-- Once you have your laptop back (:wink:), run [Start Core Services](start-core.sh). Your "core" set of services might be different from mine
-- OPTIONAL: [Stop Core Services](stop-core.sh)
+- Run [Stop All Microservices](spin-scripts/stop-all.sh)
+- Once you have your laptop back (:wink:), run [Start Core Services](spin-scripts/start-core.sh). Your "core" set of services might be different from mine
+- OPTIONAL: [Stop Core Services](spin-scripts/stop-core.sh)
 
 
 ## Setup IntelliJ
