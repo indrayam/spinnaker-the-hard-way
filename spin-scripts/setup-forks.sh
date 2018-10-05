@@ -4,7 +4,7 @@
 SPINNAKER_DEV="$HOME/dev/spinnaker"
 mkdir -p $SPINNAKER_DEV
 # If you want your existing GitHub repos to be deleted
-GITHUB_PERSONAL_TOKEN="e55380cbdf811cfef735daf5c9d0f3d3aee511b7"
+GITHUB_PERSONAL_TOKEN="<token>"
 GITHUB_USER_ID="indrayam"
 
 for ms in deck gate fiat clouddriver orca kayenta front50 rosco igor echo halyard; do
