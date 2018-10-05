@@ -39,24 +39,49 @@ I used Google Cloud SDK version `219.0.1` and `gsutil` version `4.34`
 curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
 # Follow instructions at end of script to add nvm to ~/.bash_rc
   
-nvm install v8.9.0
+nvm install v8.9.0 
+# Version running on my laptop: 8.9.0
 ```
 
 - **yarn**
-> `npm install -g yarn` (Version running on my laptop: 1.9.4)
+
+```bash
+npm install -g yarn
+# Version running on my laptop: 1.9.4
+```
 
 Make sure all the pieces are installed by running the following:
 
 ```bash
 {
+echo "---gcloud---"
+gcloud config list
+echo "---git---"
 git --version
+echo "---curl---"
 curl --version
+echo "---netcat---"
 netcat -V
+echo "---redis-server---"
 /usr/local/Cellar/redis/4.0.11/bin/redis-server -v
+echo "---java---"
 java -version
+echo "---node---"
 node -v
+echo "---yarn---"
 yarn -v
 }
+```
+
+If you have an existing Redis server, run the following command to flush the database:
+
+```bash
+shell-prompt>redis-cli
+127.0.0.1:6379> FLUSHDB ASYNC
+OK
+127.0.0.1:6379> KEYS *
+(empty list or set)
+127.0.0.1:6379> exit
 ```
 
 ## Install Halyard
