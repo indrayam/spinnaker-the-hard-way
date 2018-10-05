@@ -34,10 +34,14 @@ I used Google Cloud SDK version `219.0.1` and `gsutil` version `4.34`
 - **java**
 > Downloaded directly from Oracle (Version running on my laptop: 1.8.0_31)
 - **node**
-> curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
-  # Follow instructions at end of script to add nvm to ~/.bash_rc
+
+```bash
+curl -o- https://raw.githubusercontent.com/creationix/nvm/v0.33.11/install.sh | bash
+# Follow instructions at end of script to add nvm to ~/.bash_rc
   
-  nvm install v8.9.0
+nvm install v8.9.0
+```
+
 - **yarn**
 > `npm install -g yarn` (Version running on my laptop: 1.9.4)
 
