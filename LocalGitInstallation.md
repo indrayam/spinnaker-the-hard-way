@@ -1,5 +1,7 @@
 # Spinnaker Local Installation
 
+I created this document after following the document titled ["Getting Set Up for Spinnaker Development"](https://www.spinnaker.io/guides/developer/getting-set-up/). Without this document, and help from Spinnaker Core member(s), let's just say none of this would be possible
+
 ## My laptop Details
 
 - Installed on my Mac running macOS Sierra (10.12.6)
@@ -9,42 +11,17 @@
 
 - You have a GitHub account
 - You have configured your laptop to access repos in GitHub over SSH. References: [1](https://help.github.com/articles/adding-a-new-ssh-key-to-your-github-account/) and [2](https://help.github.com/articles/generating-a-new-ssh-key-and-adding-it-to-the-ssh-agent/)
-
-## Install Halyard
-
-```bash
-cd ~/
-curl -O https://raw.githubusercontent.com/spinnaker/halyard/master/install/macos/InstallHalyard.sh
-sudo bash InstallHalyard.sh
-rm InstallHalyard.sh
-```
-
-## Set up Storage Service
+- You have `gcloud` installed and available on your `$PATH`. Also, make sure it is configured to interact with your GCP account. Here's a quick 3 step installation process on a Mac:
 
 ```bash
-SERVICE_ACCOUNT_NAME='spinnaker-gce-account'
-SERVICE_ACCOUNT_DEST='~/.config/gcloud/spinnaker-gce-account.json'
-gcloud iam service-accounts create $SERVICE_ACCOUNT_NAME --display-name $SERVICE_ACCOUNT_NAME
-SA_EMAIL=$(gcloud iam service-accounts list --filter="displayName:$SERVICE_ACCOUNT_NAME" --format='value(email)')
-PROJECT=$(gcloud info --format='value(config.project)')
-#gcloud projects get-iam-policy $PROJECT
-gcloud projects add-iam-policy-binding $PROJECT --role roles/storage.admin --member serviceAccount:$SA_EMAIL
-gcloud iam service-accounts keys create $SERVICE_ACCOUNT_DEST --iam-account $SA_EMAIL
-BUCKET_LOCATION=us
-hal config storage gcs edit --project $PROJECT --bucket-location $BUCKET_LOCATION --json-path $SERVICE_ACCOUNT_DEST
-hal config storage edit --type gcs
+curl https://sdk.cloud.google.com | bash
+exec -l $SHELL
+gcloud init
 ```
 
-## Set up Cloud Provider (Kubernetes)
+I used Google Cloud SDK version `219.0.1` and `gsutil` version `4.34`
 
-```bash
-export KUBECONFIG="/Users/anasharm/.kube/rtp-learn.yaml"
-hal config provider kubernetes account add rtp-learn-admin --provider-version v2 --context $(kubectl config current-context) --kubeconfig-file "~/.kube/rtp-learn.yaml"
-hal config provider kubernetes enable
-hal config features edit --artifacts true
-```
-
-## Additional Tools
+## Core Tools
 
 - **git**
 > `brew install git` (Version running on my laptop: 2.19.0)
@@ -73,6 +50,49 @@ java -version
 node -v
 yarn -v
 }
+```
+
+## Install Halyard
+
+```bash
+cd ~/
+curl -O https://raw.githubusercontent.com/spinnaker/halyard/master/install/macos/InstallHalyard.sh
+sudo bash InstallHalyard.sh
+rm InstallHalyard.sh
+```
+
+## Set up Storage Service
+
+If you have used GCS already as the Storage provider, you may want to clean up before setting up your new local setup:
+
+```bash
+gsutil ls gs:// | grep -i spin
+gsutil rm -r gs://<spin-bucket-name>
+```
+
+Time to make sure you are ready to interact with Google Cloud Storage. Here are the commands I ran to get things setup.
+
+```bash
+SERVICE_ACCOUNT_NAME='spinnaker-gce-account'
+SERVICE_ACCOUNT_DEST='~/.config/gcloud/spinnaker-gce-account.json'
+gcloud iam service-accounts create $SERVICE_ACCOUNT_NAME --display-name $SERVICE_ACCOUNT_NAME
+SA_EMAIL=$(gcloud iam service-accounts list --filter="displayName:$SERVICE_ACCOUNT_NAME" --format='value(email)')
+PROJECT=$(gcloud info --format='value(config.project)')
+#gcloud projects get-iam-policy $PROJECT
+gcloud projects add-iam-policy-binding $PROJECT --role roles/storage.admin --member serviceAccount:$SA_EMAIL
+gcloud iam service-accounts keys create $SERVICE_ACCOUNT_DEST --iam-account $SA_EMAIL
+BUCKET_LOCATION=us
+hal config storage gcs edit --project $PROJECT --bucket-location $BUCKET_LOCATION --json-path $SERVICE_ACCOUNT_DEST
+hal config storage edit --type gcs
+```
+
+## Set up Cloud Provider (Kubernetes)
+
+```bash
+export KUBECONFIG="/Users/anasharm/.kube/rtp-learn.yaml"
+hal config provider kubernetes account add rtp-learn-admin --provider-version v2 --context $(kubectl config current-context) --kubeconfig-file "~/.kube/rtp-learn.yaml"
+hal config provider kubernetes enable
+hal config features edit --artifacts true
 ```
 
 ## Fork Spinnaker Microservices
