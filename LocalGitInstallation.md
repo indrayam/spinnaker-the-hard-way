@@ -141,7 +141,9 @@ If everything looks good, run the following commands to configure Storage Servic
 hal config storage gcs edit --project $PROJECT --bucket-location $BUCKET_LOCATION --json-path $SERVICE_ACCOUNT_DEST
 ```
 
-Running the command below adds a single line to the `~/.hal/config` file: `persistentStoreType: gcs` under `persistentStorage`
+Running the command below adds a single line to the `~/.hal/config` file: `persistentStoreType: gcs` under `persistentStorage` as shown below:
+
+![Persistent Storage GCS](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-localgit-install/gcs-storage-1.png)
 
 ```bash
 hal config storage edit --type gcs
@@ -161,13 +163,17 @@ hal config provider kubernetes account add rtp-learn-admin --provider-version v2
 hal config provider kubernetes enable
 ```
 
-After running these commands, the `~/.hal/config` file had two changes: kubernetes enabled was set to "true" and kubernetes account `rtp-learn-admin` was added with the details provided as part of the command line
+After running these commands shown above, the `~/.hal/config` file had two changes: kubernetes enabled was set to "true" (not shown in the screenshot below) and kubernetes account `rtp-learn-admin` was added with the details provided as part of the command line
+
+![Kubernetes v2 Account](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-localgit-install/kubernetes-v2-1.png)
+
+Not entirely sure why the document titled [Kubernetes Provider V2](https://www.spinnaker.io/setup/install/providers/kubernetes-v2/) says the following command is also necessary as part of provisioning a Kubernetes Cloud provider. Anyways, the result of running the above command was that the `~/.hal/config` changed whereby a new line `artifacts: true` was added under the `features:` section.
 
 ```bash
 hal config features edit --artifacts true
 ```
 
-Not entirely sure why the document titled [Kubernetes Provider V2](https://www.spinnaker.io/setup/install/providers/kubernetes-v2/) says the above command is also necessary as part of provisioning a Kubernetes Cloud provider. Anyways, the result of running the above command was that the `~/.hal/config` changed whereby a new line `artifacts: true` was added under the `features:` section.
+![Kubernetes v2 Account](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-localgit-install/kubernetes-v2-2.png)
 
 ## Fork Spinnaker Microservices
 
@@ -209,15 +215,19 @@ Configure `hal` to use the 'LocalGit' install type, as opposed to the default 'L
 hal config deploy edit --type localgit --git-origin-user=indrayam
 ```
 
+![LocalGit Deployment Type](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-localgit-install/localgittype-1.png)
+
 Configure Spinnaker to update/install version `branch:upstream/master`. When we run `hal deploy apply`, deploy this version of Spinnaker microservice. Notice that since this is a local deployment, you are not specifying a version (like `1.9.5`). Instead, you are asking `hal` to get the latest version on the `master` branch
 
 ```bash
 hal config version edit --version branch:upstream/master
 ```
 
+![Spinnaker Version](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-localgit-install/localgittype-2.png)
+
 ## Configure Fiat (OPTIONAL)
 
-Run the following commands to enable Fiat Authn and Enable LDAP as the Authn medium
+Run the following commands to enable Fiat Authn and Enable LDAP as the authentication source
 
 ```bash
 hal config security authn ldap edit --user-dn-pattern="cn={0},OU=Employees,OU=CiscoUsers" --url=ldap://ds.cisco.com:3268/DC=cisco,DC=com
@@ -225,15 +235,21 @@ hal config security authn ldap edit --user-dn-pattern="cn={0},OU=Employees,OU=Ci
 hal config security authn ldap enable
 ```
 
+Here's what the `~/.hal/config` changes looked like after running the command `hal config security authn ldap edit...`
+
+![Fiat LDAP Edit Changes](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-localgit-install/fiat-ldap-1.png)
+
 If you would like to customize the LDAP settings and `hal` does not seem to be co-operating, after the final `hal deploy apply` command is run (see below), feel free to create `~/.spinnaker/fiat-local.yml` file to selectively override configuration values in `~/.spinnaker/fiat.yml`
 
 [Download fiat-local.yml - Cisco/CoDE team members ONLY](https://gitscm.cisco.com/projects/NERDS/repos/spinnaker-localgit/browse/spinnaker-local-config/fiat-local.yml)
 
-An interesting trivia: After running `hal config security authn ldap enable`, the `~/.hal/config` file updated two things:
+An interesting trivia: After running `hal config security authn ldap enable`, the `~/.hal/config` file had these changes (or not):
 
 - Set `authn > ldap > enabled: true`
 - Set `authn > enabled > true`
 - It did not do anything to `features > auth: false` or `features > fiat: false` settings
+
+![Fiat LDAP Enabled Changes](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-localgit-install/fiat-ldap-2.png)
 
 ## Configure Gate (OPTIONAL)
 
@@ -251,6 +267,10 @@ hal config security authz ldap edit \
 
 hal config security authz enable
 ```
+
+![Gate Changes Part 1](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-localgit-install/gate-ldap-1.png)
+
+![Gate Changes Part 2](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-localgit-install/gate-ldap-2.png)
 
 If you would like to customize the LDAP settings and `hal` does not seem to be co-operating, after the final `hal deploy apply` command is run (see below),  create `~/.spinnaker/gate-local.yml` file to selectively override configuration values in `~/.spinnaker/gate.yml`
 
