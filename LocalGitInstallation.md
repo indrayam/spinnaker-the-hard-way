@@ -9,11 +9,11 @@ I created this document after following the document titled ["Getting Set Up for
 
 ## Key File/Folder Locations
 
-- `~/.hal` 
+- **~/.hal**
 > This is the folder where `hal` stores its configuration(s) for the Spinnaker deployment on your laptop.
-- `~/.spinnaker` 
+- **~/.spinnaker**
 > This is the folder that your Spinnaker microservices read from. `hal deploy apply` generates files in this folder for the individual microservices.
-- `~/dev/spinnaker` 
+- **~/dev/spinnaker**
 > This is the folder where we will be forking and cloning all the Spinnaker microservices. `hal` command will create additional folders here: 
 > - `logs` where the log and error files for each microservice that's running is stored
 > - `scripts` where the start/stop scripts for each microservice is stored
@@ -120,10 +120,12 @@ Time to make sure you are ready to interact with Google Cloud Storage. Here are 
 {
 SERVICE_ACCOUNT_NAME='spinnaker-gce-account'
 SERVICE_ACCOUNT_DEST='/Users/anasharm/.config/gcloud/spinnaker-gce-account.json'
+
 # If the Service Account already exist, running the command again will simply throw an error. Ignore it
 gcloud iam service-accounts create $SERVICE_ACCOUNT_NAME --display-name $SERVICE_ACCOUNT_NAME
 SA_EMAIL=$(gcloud iam service-accounts list --filter="displayName:$SERVICE_ACCOUNT_NAME" --format='value(email)')
 PROJECT=$(gcloud info --format='value(config.project)')
+
 # Run this command and look for "spinnaker-gce-account" as a member of the project with a role of "roles/storage.admin"
 # gcloud projects get-iam-policy $PROJECT | grep -i --context=2 "roles/storage.admin"
 # If it does, you can skip this next command. However, running the command will do no harm
@@ -133,21 +135,39 @@ BUCKET_LOCATION=us
 }
 ```
 
-If everything looks good, run the following commands to configure Storage Service. Here's an interesting observation. Prior to running the following command, `~/.hal` folder has no `config` file. There is no `~/.spinnaker` folder either yet.
+If everything looks good, run the following commands to configure Storage Service. Here's an interesting observation. Prior to running the following command, `~/.hal` folder has no `config` file. This command primarily adds the GCS details under `persistentStorage | gcs` section of the YAML. There is no `~/.spinnaker` folder created at this stage either. After running it, `~/.hal` folder is populated with `config` file, a `default` profile folder with an empty `config` folder inside of it.
 
 ```bash
 hal config storage gcs edit --project $PROJECT --bucket-location $BUCKET_LOCATION --json-path $SERVICE_ACCOUNT_DEST
+```
+
+Running the following command adds a single line to the `~/.hal/config` file: `persistentStoreType: gcs` under `persistentStorage`
+
+```bash
 hal config storage edit --type gcs
 ```
 
 ## Set up Cloud Provider (Kubernetes)
 
+Considering that running all Spinnaker microservices on a machine with 16GB RAM is in and of itself a stretch, trying to run the Cloud Provider locally would pretty much kill the laptop. So, this is where we all have a choice: Pick the Cloud Provider that is most convenient for your use case. Ideally, point to an instance of Kubernetes that you already have access to.
+
+[For Cisco/CoDE team members](https://gitscm.cisco.com/projects/NERDS/repos/k8s-configurations/raw/rtp-learn.yaml?at=refs%2Fheads%2Fmaster)
+
+I prefer to not use the `~/.kube/config` file on my laptop, as that tends to change a lot. At least for me it does. So I tend to create a separate configuration file within `~/.kube/` folder (say, `spinnaker.yaml`) with the relevant Kubernetes cluster entry (or entries) that your local Spinnaker would deploy applications to.
+
 ```bash
 export KUBECONFIG="/Users/anasharm/.kube/rtp-learn.yaml"
-hal config provider kubernetes account add rtp-learn-admin --provider-version v2 --context $(kubectl config current-context) --kubeconfig-file "~/.kube/rtp-learn.yaml"
+hal config provider kubernetes account add rtp-learn-admin --provider-version v2 --context $(kubectl config current-context) --kubeconfig-file "/Users/anasharm/.kube/rtp-learn.yaml"
 hal config provider kubernetes enable
+```
+
+After running these commands, the `~/.hal/config` file had two changes: kubernetes enabled was set to "true" and kubernetes account `rtp-learn-admin` was added with the details provided as part of the command line
+
+```bash
 hal config features edit --artifacts true
 ```
+
+Not entirely sure why the document titled (Kubernetes Provider V2 (Manifest Based) )[https://www.spinnaker.io/setup/install/providers/kubernetes-v2/] says the above command is also necessary as part of provisioning a Kubernetes Cloud provider. Anyways, the result of running the above command was that the `~/.hal/config` changed whereby a new line `artifacts: true` was added under the `features:` section.
 
 ## Fork Spinnaker Microservices
 
