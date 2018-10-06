@@ -167,7 +167,7 @@ After running these commands, the `~/.hal/config` file had two changes: kubernet
 hal config features edit --artifacts true
 ```
 
-Not entirely sure why the document titled [Kubernetes Provider V2 (Manifest Based)]([https://www.spinnaker.io/setup/install/providers/kubernetes-v2/) says the above command is also necessary as part of provisioning a Kubernetes Cloud provider. Anyways, the result of running the above command was that the `~/.hal/config` changed whereby a new line `artifacts: true` was added under the `features:` section.
+Not entirely sure why the document titled [Kubernetes Provider V2](https://www.spinnaker.io/setup/install/providers/kubernetes-v2/) says the above command is also necessary as part of provisioning a Kubernetes Cloud provider. Anyways, the result of running the above command was that the `~/.hal/config` changed whereby a new line `artifacts: true` was added under the `features:` section.
 
 ## Fork Spinnaker Microservices
 
