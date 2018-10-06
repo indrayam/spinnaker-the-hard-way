@@ -75,7 +75,7 @@ If you had a handful of Applications (with Microservices) to manage in a single 
 
 ## Spinnaker Nomenclature
 
-![Spinnaker Deck UI/K8s Terminology](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-deck-k8s-terminology-mapping.png)
+![Spinnaker Deck UI/K8s Terminology](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-localgit-install/spinnaker-deck-naming.png)
 
 **Project:**
 
