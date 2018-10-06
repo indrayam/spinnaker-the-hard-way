@@ -151,7 +151,7 @@ hal config storage edit --type gcs
 
 Considering that running all Spinnaker microservices on a machine with 16GB RAM is in and of itself a stretch, trying to run the Cloud Provider locally would pretty much kill the laptop. So, this is where we all have a choice: Pick the Cloud Provider that is most convenient for your use case. Ideally, point to an instance of Kubernetes that you already have access to.
 
-[For Cisco/CoDE team members](https://gitscm.cisco.com/projects/NERDS/repos/k8s-configurations/raw/rtp-learn.yaml?at=refs%2Fheads%2Fmaster)
+[Download rtp-learn.yml - Cisco/CoDE team members ONLY](https://gitscm.cisco.com/projects/NERDS/repos/spinnaker-localgit/browse/kube-config/rtp-learn.yaml)
 
 I prefer to not use the `~/.kube/config` file on my laptop, as that tends to change a lot. At least for me it does. So I tend to create a separate configuration file within `~/.kube/` folder (say, `spinnaker.yaml`) with the relevant Kubernetes cluster entry (or entries) that your local Spinnaker would deploy applications to.
 
@@ -201,18 +201,45 @@ Run the [Setup Forks](spin-scripts/setup-forks.sh) script. However, the script a
 - [Hub CLI](https://hub.github.com/)
 - Configure `hub` CLI so that it knows your GitHub username and GitHub Personal Token
 
-## Halyard Commands to Wrap Up
+## Configure Spinnaker Deployment 
+
+Configure `hal` to use the 'LocalGit' install type, as opposed to the default 'LocalDebian' type.
 
 ```bash
 hal config deploy edit --type localgit --git-origin-user=indrayam
-hal config version edit --version branch:upstream/master
-# Run the following commands to enable Fiat Authn and Enable LDAP as the Authn medium
-hal config security authn ldap enable
-hal config security authn ldap edit --user-dn-pattern="cn={0},OU=Employees,OU=CiscoUsers" --url=ldap://ds.cisco.com:3268/DC=cisco,DC=com
-# If the LDAP settings need to be updated, update the ~/.spinnaker/fiat-local.yml file
+```
 
-# Run the following commands to enable Fiat Authz and use LDAP as Role Provider
-hal config security authz enable
+Configure Spinnaker to update/install version `branch:upstream/master`. When we run `hal deploy apply`, deploy this version of Spinnaker microservice. Notice that since this is a local deployment, you are not specifying a version (like `1.9.5`). Instead, you are asking `hal` to get the latest version on the `master` branch
+
+```bash
+hal config version edit --version branch:upstream/master
+```
+
+## Configure Fiat (OPTIONAL)
+
+Run the following commands to enable Fiat Authn and Enable LDAP as the Authn medium
+
+```bash
+hal config security authn ldap edit --user-dn-pattern="cn={0},OU=Employees,OU=CiscoUsers" --url=ldap://ds.cisco.com:3268/DC=cisco,DC=com
+
+hal config security authn ldap enable
+```
+
+If you would like to customize the LDAP settings and `hal` does not seem to be co-operating, after the final `hal deploy apply` command is run (see below), feel free to create `~/.spinnaker/fiat-local.yml` file to selectively override configuration values in `~/.spinnaker/fiat.yml`
+
+[Download fiat-local.yml - Cisco/CoDE team members ONLY](https://gitscm.cisco.com/projects/NERDS/repos/spinnaker-localgit/browse/spinnaker-local-config/fiat-local.yml)
+
+An interesting trivia: After running `hal config security authn ldap enable`, the `~/.hal/config` file updated two things:
+
+- Set `authn > ldap > enabled: true`
+- Set `authn > enabled > true`
+- It did not do anything to `features > auth: false` or `features > fiat: false` settings
+
+## Configure Gate (OPTIONAL)
+
+Run the following commands to enable Gate to use LDAP as Role Provider.
+
+```bash
 hal config security authz ldap edit \
     --url ldap://ds.cisco.com:3268/dc=cisco,dc=com \
     --manager-dn 'dft-ds.gen@cisco.com' \
@@ -221,11 +248,23 @@ hal config security authz ldap edit \
     --group-search-base OU=Standard,OU=CiscoGroups,dc=cisco,dc=com \
     --group-search-filter "(member{0})" \
     --group-role-attributes cn
-# If this command fails, update the ~/.spinnaker/gate-local.yml file
+
+hal config security authz enable
+```
+
+If you would like to customize the LDAP settings and `hal` does not seem to be co-operating, after the final `hal deploy apply` command is run (see below),  create `~/.spinnaker/gate-local.yml` file to selectively override configuration values in `~/.spinnaker/gate.yml`
+
+[Download gate-local.yml - Cisco/CoDE team members ONLY](https://gitscm.cisco.com/projects/NERDS/repos/spinnaker-localgit/browse/spinnaker-local-config/gate-local.yml)
+
+## Review and Deploy
+
+You're now ready to review the configurations defined in `~/.hal/config` and apply it by running
+
+```bash
 hal deploy apply
 ```
 
-## Handle Microservices
+## Managing the Microservices
 
 First things first:
 
