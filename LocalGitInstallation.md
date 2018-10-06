@@ -135,13 +135,13 @@ BUCKET_LOCATION=us
 }
 ```
 
-If everything looks good, run the following commands to configure Storage Service. Here's an interesting observation. Prior to running the following command, `~/.hal` folder has no `config` file. This command primarily adds the GCS details under `persistentStorage | gcs` section of the YAML. There is no `~/.spinnaker` folder created at this stage either. After running it, `~/.hal` folder is populated with `config` file, a `default` profile folder with an empty `config` folder inside of it.
+If everything looks good, run the following commands to configure Storage Service. Here's an interesting observation. Prior to running the following command, `~/.hal` folder had no `config` file. There is no `~/.spinnaker` folder created at this stage either. After running it, `~/.hal` folder is populated with `config` file, a `default` profile folder with an empty `config` folder inside of it. This command adds the GCS details under `persistentStorage > gcs` section of the `config` file. Bottom line, as you run the `hal config` commands, you are essentially building up the configuration of your local Spinnaker install
 
 ```bash
 hal config storage gcs edit --project $PROJECT --bucket-location $BUCKET_LOCATION --json-path $SERVICE_ACCOUNT_DEST
 ```
 
-Running the following command adds a single line to the `~/.hal/config` file: `persistentStoreType: gcs` under `persistentStorage`
+Running the command below adds a single line to the `~/.hal/config` file: `persistentStoreType: gcs` under `persistentStorage`
 
 ```bash
 hal config storage edit --type gcs
@@ -167,7 +167,7 @@ After running these commands, the `~/.hal/config` file had two changes: kubernet
 hal config features edit --artifacts true
 ```
 
-Not entirely sure why the document titled (Kubernetes Provider V2 (Manifest Based) )[https://www.spinnaker.io/setup/install/providers/kubernetes-v2/] says the above command is also necessary as part of provisioning a Kubernetes Cloud provider. Anyways, the result of running the above command was that the `~/.hal/config` changed whereby a new line `artifacts: true` was added under the `features:` section.
+Not entirely sure why the document titled [Kubernetes Provider V2 (Manifest Based)]([https://www.spinnaker.io/setup/install/providers/kubernetes-v2/) says the above command is also necessary as part of provisioning a Kubernetes Cloud provider. Anyways, the result of running the above command was that the `~/.hal/config` changed whereby a new line `artifacts: true` was added under the `features:` section.
 
 ## Fork Spinnaker Microservices
 
