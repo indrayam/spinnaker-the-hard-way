@@ -1,8 +1,10 @@
 #!/bin/bash
 
 # Setup the base folder
-SPINNAKER_DEV="$HOME/dev/spinnaker"
-mkdir -p $SPINNAKER_DEV
+SPINNAKER_FORK="/tmp/spinnaker"
+echo "Cleanup any existing $SPINNAKER_FORK folder..."
+rm -rf $SPINNAKER_FORK
+mkdir -p $SPINNAKER_FORK
 GITHUB_USER_ID="indrayam"
 GITHUB_PERSONAL_TOKEN="${1}"
 if [ -z "$GITHUB_PERSONAL_TOKEN" ]
@@ -19,10 +21,14 @@ for ms in deck gate fiat clouddriver orca kayenta front50 rosco igor echo halyar
     echo "Deleting $r"
     curl -XDELETE -H "Authorization: token $GITHUB_PERSONAL_TOKEN" "https://api.github.com/repos/${GITHUB_USER_ID}/$r"
     echo "Cloning spinnaker/$ms..."
-    cd $SPINNAKER_DEV
+    cd $SPINNAKER_FORK
     rm -rf $ms
     hub clone spinnaker/$ms
     cd $ms
     hub fork --remote-name=origin
     hub remote -v
 done
+
+echo
+echo "Cleanup the cloned folders since hal will clone and set them up"
+rm -rf $SPINNAKER_FORK

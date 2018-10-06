@@ -171,11 +171,15 @@ Not entirely sure why the document titled [Kubernetes Provider V2](https://www.s
 
 ## Fork Spinnaker Microservices
 
-Here are all the Spinnaker Microservices that are documented in [Spinnaker Reference Docs](https://www.spinnaker.io/reference/architecture/#spinnaker-microservices)
+The goal of this section is the following:
+
+- Fork all the Spinnaker Microservices into your personal GitHub account
+
+Here are all the Spinnaker Microservices that are documented in [Spinnaker Reference Docs](https://www.spinnaker.io/reference/architecture/#spinnaker-microservices). 
 
 **OPTION 1:**
 
-Open each of the links in a separate tab and fork the repo into your personal repo. **Make sure you have your SSH keys setup to access each of these Git repos**:
+Open each of the links below in a separate tab and fork the repo into your personal repo:
 
 - [Deck](https://github.com/spinnaker/deck)
 - [Gate](https://github.com/spinnaker/gate)
