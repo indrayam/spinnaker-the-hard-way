@@ -230,14 +230,15 @@ hal config version edit --version branch:upstream/master
 Run the following commands to enable Fiat Authn and Enable LDAP as the authentication source
 
 ```bash
-hal config security authn ldap edit --user-dn-pattern="cn={0},OU=Employees,OU=CiscoUsers" --url=ldap://ds.cisco.com:3268/DC=cisco,DC=com
-
+# hal config security authn ldap edit...
 hal config security authn ldap enable
 ```
 
 Here's what the `~/.hal/config` changes looked like after running the command `hal config security authn ldap edit...`
 
-![Fiat LDAP Edit Changes](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-localgit-install/fiat-ldap-1.png)
+![Fiat LDAP Edit Changes](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-localgit-install/fiat-ldap-3.png)
+
+[hal config security authn ldap edit command - Cisco/CoDE team members ONLY](https://gitscm.cisco.com/projects/NERDS/repos/spinnaker-localgit/browse/hal-commands/ldap-authc.sh)
 
 If you would like to customize the LDAP settings and `hal` does not seem to be co-operating, after the final `hal deploy apply` command is run (see below), feel free to create `~/.spinnaker/fiat-local.yml` file to selectively override configuration values in `~/.spinnaker/fiat.yml`
 
@@ -249,24 +250,17 @@ An interesting trivia: After running `hal config security authn ldap enable`, th
 - Set `authn > enabled > true`
 - It did not do anything to `features > auth: false` or `features > fiat: false` settings
 
-![Fiat LDAP Enabled Changes](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-localgit-install/fiat-ldap-2.png)
+![Fiat LDAP Enabled Changes](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-localgit-install/fiat-ldap-4.png)
 
 ## Configure Gate (OPTIONAL)
 
 Run the following commands to enable Gate to use LDAP as Role Provider.
 
 ```bash
-hal config security authz ldap edit \
-    --url ldap://ds.cisco.com:3268/dc=cisco,dc=com \
-    --manager-dn 'dft-ds.gen@cisco.com' \
-    --manager-password \
-    --user-dn-pattern cn={0},ou=CiscoUsers \
-    --group-search-base OU=Standard,OU=CiscoGroups,dc=cisco,dc=com \
-    --group-search-filter "(member{0})" \
-    --group-role-attributes cn
-
 hal config security authz enable
 ```
+
+[hal config security authz ldap edit command - Cisco/CoDE team members ONLY](https://gitscm.cisco.com/projects/NERDS/repos/spinnaker-localgit/browse/hal-commands/ldap-authz.sh)
 
 ![Gate Changes Part 1](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-localgit-install/gate-ldap-1.png)
 
