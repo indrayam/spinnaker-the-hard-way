@@ -10,7 +10,7 @@ SPINNAKER_DEV="$HOME/dev/spinnaker"
 
 for ms in deck gate fiat clouddriver orca kayenta front50 rosco igor echo; do
     echo "Stopping $ms..."
-    #$SPINNAKER_DEV/scripts/$ms-stop.sh
+    $SPINNAKER_DEV/scripts/$ms-stop.sh
     sleep 1
 done
 

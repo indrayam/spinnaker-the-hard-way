@@ -282,24 +282,117 @@ If you would like to customize the LDAP settings and `hal` does not seem to be c
 
 ## Review and Deploy
 
+Before you run the following command, just to be on the safe side, do the following:
+
+- Run the following command. Why? I am not sure, but I do remember seeing a permission error the first time I ran this command on my Mac. Anyways, it does not hurt.
+- If you're on a Mac with 16 GB of RAM, it may be a good idea to have the Activity Monitor running to see how your CPU usage spikes
+- Also, turn off absolutely everything that you really DO NOT need. I even turned off my Docker daemon.
+
+```bash
+sudo chown -R <userid>:staff /opt/halyard
+```
+
 You're now ready to review the configurations defined in `~/.hal/config` and apply it by running
 
 ```bash
 hal deploy apply
 ```
 
-## Managing the Microservices
+Things that happens, assuming everything goes well:
+
+- `~/.spinnaker/` folder will get a single YAML file per Microservice that is started
+- `~/dev/spinnaker/` folder will get populated by one folder per Microservice. This is where `hal` clones your forked Spinnaker repositories (from your GitHub account) and sets up `upstream` git remote to point to the respective Microservice repo under `spinnaker` GitHub organization
+- `~/dev/spinnaker/` folder also gets `scripts` and `logs` folder. You can individually stop and start microservices using the scripts inside the `scripts` folder. However, it is a pain to do it one at a time. You might find the scripts linked to in the section below a bit more useful
+- `deck.err` file under `~/dev/spinnaker/logs` folder gets insanely large and seems to hog all your laptop's CPU as `deck` is starting up. Not sure why. Takes a good 10 mins or so before `deck` startup is complete and the `deck.err` stops growing in size. In my case, it stopped after it had grown from 0 to **2.1 MB** in size! 
+
+## Immediate Next Steps
 
 First things first:
 
-- Run [Stop All Microservices](spin-scripts/stop-all.sh)
-- Once you have your laptop back (:wink:), run [Start Core Services](spin-scripts/start-core.sh). Your "core" set of services might be different from mine
-- OPTIONAL: [Stop Core Services](spin-scripts/stop-core.sh)
+- Download all [Spin Scripts](spin-scripts/) folder under `/tmp/spin-scripts`
+- Run [Stop All Microservices](spin-scripts/stop-all.sh) to stop all the Spinnaker microservices. Once this command successfully completes, you will have your laptop back :wink: You're welcome!
 
+Feel free to re-run the script. It would not hurt. If you see messages complaining about individual microservices not running or such, don't worry. Our first goal is to get them all stopped!
 
-## Setup IntelliJ
+Open the "Activity Monitor" and make sure that you do not see Spinnaker microservices related processes. Most of them will have their Process Name as "java". If you see a few, select and double-click each. You should an entry for the `halyard` daemon and another one for the `gradle` daemon. If you see others and you know that these are not Spinnaker microservices, you are all set.
 
-Repeat these steps for each Microservice!
+Finaly step: Quickly peruse through the Spinnaker microservice configurations under `~/.spinnaker`
+
+## Pick your Spinnaker Microservices
+
+Everyone is interested in learning or working with a few Spinnaker microservice(s). Mine are:
+
+- deck
+- gate
+- clouddriver
+- fiat
+- front50
+- igor
+
+Customize [Start Core Services](spin-scripts/start-core.sh) shell script to suit your needs. Make sure you do the same for the [Stop Core Services](spin-scripts/stop-core.sh) script
+
+When it all looks good, start the core services:
+
+```bash
+/tmp/start-core.sh
+```
+
+## Time to Read/Write Code
+
+If you want to review code and learn from the Spinnaker "Gods" of code, I would encourage using an editor like [Sublime Text](https://www.sublimetext.com/3). After installing the editor (assuming you do not already have it installed), install the [Package Control](https://packagecontrol.io/installation) plugin which makes installing Sublime Text plugins trivial.
+
+Install [ProjectManager](https://github.com/randy3k/ProjectManager) plugin and then create a Project called `spinnaker-dev` with the following Project configuration:
+
+```bash
+{
+    "folders":
+    [
+        {
+            "path": "~/.hal"
+        },
+        {
+            "path": "~/.spinnaker"
+        },        
+        {
+            "path": "~/dev/spinnaker/clouddriver"
+        },
+        {
+            "path": "~/dev/spinnaker/deck"
+        },
+        {
+            "path": "~/dev/spinnaker/echo"
+        },
+        {
+            "path": "~/dev/spinnaker/fiat"
+        },
+        {
+            "path": "~/dev/spinnaker/front50"
+        },
+        {
+            "path": "~/dev/spinnaker/gate"
+        },
+        {
+            "path": "~/dev/spinnaker/igor"
+        },
+        {
+            "path": "~/dev/spinnaker/kayenta"
+        },
+        {
+            "path": "~/dev/spinnaker/orca"
+        },
+        {
+            "path": "~/dev/spinnaker/rosco"
+        },
+        {
+            "path": "~/dev/spinnaker/scripts"
+        },
+    ]
+}
+```
+
+Once ready, you will be able to search across all microservices using simple keyboard shortcuts like `Cmd+P`. I cannot say enough about how easy it is to breeze through code in Sublime Text
+
+If you would like to dive into writing Java software, you probably want to use IntelliJ. Repeat these steps for each Microservice that you want to work with. Remember, IntelliJ is itself a Java software and has the potential of being a memory hog. You've been warned :wink:
 
 ```bash
 cd ~/dev/spinnaker/<microservice>/

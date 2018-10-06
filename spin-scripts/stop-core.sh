@@ -13,13 +13,12 @@ for ms in clouddriver front50 deck fiat gate orca; do
     echo "Stopping $ms..."
     $SPINNAKER_DEV/scripts/$ms-stop.sh
     echo 
-    sleep 1
+    sleep 5
     echo "Checking if clouddriver port is released..."
     echo "Port value is ${port[$ms]}"
     sudo lsof -t -i:${port[$ms]}
     echo "---"
     echo 
-    sleep 1
 done
 
 echo
