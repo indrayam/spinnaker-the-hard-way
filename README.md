@@ -5,7 +5,7 @@
 - [Spinnaker LocalGit Installation Steps](LocalGitInstallation.md)
 - [Spinnaker Distributed Kubernetes Installation Steps](DistributedKuberntesInstallation.md)
 
-## Spinnaker Concepts [Testing PR Features]
+## Spinnaker Concepts
 
 As the documentation states:
 
