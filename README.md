@@ -75,6 +75,8 @@ If you had a handful of Applications (with Microservices) to manage in a single 
 
 ## Spinnaker Nomenclature
 
+![Spinnaker Deck UI/K8s Terminology](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-deck-k8s-terminology-mapping.png)
+
 **Project:**
 
   A Spinnaker Project is a collection of Spinnaker Applications. It's a view that pulls information about multiple Spinnaker Apps into a single pane
