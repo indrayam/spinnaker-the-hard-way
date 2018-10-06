@@ -230,7 +230,7 @@ hal config version edit --version branch:upstream/master
 Run the following commands to enable Fiat Authn and Enable LDAP as the authentication source
 
 ```bash
-# hal config security authn ldap edit...
+hal config security authn ldap edit --user-dn-pattern=".." --url="..."
 hal config security authn ldap enable
 ```
 
@@ -257,6 +257,14 @@ An interesting trivia: After running `hal config security authn ldap enable`, th
 Run the following commands to enable Gate to use LDAP as Role Provider.
 
 ```bash
+hal config security authz ldap edit \
+    --url ldap://...:.../dc=abc,dc=com \
+    --manager-dn '...' \
+    --manager-password \
+    --user-dn-pattern cn={0},ou=... \
+    --group-search-base OU=...,dc=abc,dc=com \
+    --group-search-filter "(member{0})" \
+    --group-role-attributes cn
 hal config security authz enable
 ```
 
