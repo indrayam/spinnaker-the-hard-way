@@ -143,7 +143,7 @@ hal config storage gcs edit --project $PROJECT --bucket-location $BUCKET_LOCATIO
 
 Running the command below adds a single line to the `~/.hal/config` file: `persistentStoreType: gcs` under `persistentStorage` as shown below:
 
-![Persistent Storage GCS](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-localgit-install/gcs-storage-1.png)
+![Persistent Storage GCS](https://s3.amazonaws.com/us-east-1-anand-files/spinnaker-localgit-install/gcs-storage.png)
 
 ```bash
 hal config storage edit --type gcs
