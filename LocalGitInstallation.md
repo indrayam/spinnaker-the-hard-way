@@ -18,6 +18,8 @@ I created this document after following the document titled ["Getting Set Up for
 > - `logs` where the log and error files for each microservice that's running is stored
 > - `scripts` where the start/stop scripts for each microservice is stored
 > -`*.pid` files for each microservice that's running
+- **/opt/halyard**, **/opt/spinnaker**
+> `hal` is installed in `/opt/halyard` folder. `/opt/spinnaker` folder consists of a `config` folder with two files that looks like configuration files (`halyard-user` and `halyard.yml`). _Why use two folders?_ Looks like a technical debt to me :wink:
 
 ## Assumptions
 
