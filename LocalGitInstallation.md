@@ -1,4 +1,4 @@
-# Spinnaker Local Installation
+# Spinnaker LocalGit Installation
 
 I created this document after following the document titled ["Getting Set Up for Spinnaker Development"](https://www.spinnaker.io/guides/developer/getting-set-up/). Without this document, and help from Spinnaker Core member(s), let's just say none of this would be possible
 
