@@ -494,3 +494,68 @@ auth:
 
 **Note:**
 I cannot make ldaps work in a Kubernetes environment. Keeps giving me LDAPS (LDAP over TLS) connection failed. [Reference 1](https://community.spinnaker.io/t/ldap-authentication-ldaps-protocol/386), [Reference 2](https://langui.sh/2009/03/14/checking-a-remote-certificate-chain-with-openssl/)
+
+## Configure External Redis and Scale Clouddriver
+
+Using a single Redis instance will not scale in the end. Eventually, you are better off having the Microservices use their own Redis instance. The following Microservices have dependency on Redis:
+
+- Gate
+- Fiat
+- Orca
+- Clouddriver
+  + Clouddriver RW
+  + Clouddriver Caching
+  + Clouddriver RO
+- Igor
+- Rosca
+- Kayenta
+
+In order to make each of these use its own dedicated Redis instance, make the following changes.
+
+1. Add `~/.hal/default/service-settings/redis.yml`:
+
+```bash
+skipLifeCycleManagement: true
+```
+
+2. Create, if one does not exist, the following files in `~/.hal/default/profiles/`:
+- fiat-local.yml
+- gate-local.yml
+- igor-local.yml
+- kayenta-local.yml
+- orca-local.yml
+- rosco-local.yml
+
+In each of the file, add a line like the following:
+
+```bash
+services.redis.baseUrl: redis://:<redis-password>@64.102.181.16:6383
+```
+
+Yes, the `userid` portion is blank, because as of Redis 4.x, there is no concept of users in Redis.
+
+3. Run the following commands to enable Clouddriver HA:
+
+```bash
+hal config deploy ha clouddriver enable
+hal config deploy ha clouddriver edit --redis-master-endpoint 'redis://:<redis-password>@64.102.181.16:6382' --redis-slave-endpoint 'redis://:<redis-password>@64.102.180.241:16382'
+```
+
+Observations:
+
+Redis entries that we saw soon after starting up the Spinnaker instance:
+
+- Clouddriver: 1527 entries (for 2 Accounts, 2 Registries)
+- Gate: 6 keys (but only after I logged in at least once)
+- Fiat: 104 Keys
+- Orca: None (I have not created a single pipeline or triggered it)
+- Igor: 758 Keys (All related to Docker Registries and My Jenkins configuration)
+- Rosco: None (I have not created a pipeline which needed baking an image)
+- Kayenta: None
+
+It is easier to run `hal deploy clean` and start afresh
+
+Finally, I noticed the following during startup:
+
+- Fiat does not startup until Clouddriver is done doing validations...
+- Igor does not startup until Clouddriver is up....
