@@ -495,7 +495,7 @@ auth:
 **Note:**
 I cannot make ldaps work in a Kubernetes environment. Keeps giving me LDAPS (LDAP over TLS) connection failed. [Reference 1](https://community.spinnaker.io/t/ldap-authentication-ldaps-protocol/386), [Reference 2](https://langui.sh/2009/03/14/checking-a-remote-certificate-chain-with-openssl/)
 
-## Configure External Redis and Scale Clouddriver
+## Configure External Redis
 
 Using a single Redis instance will not scale in the end. Eventually, you are better off having the Microservices use their own Redis instance. The following Microservices have dependency on Redis:
 
@@ -534,12 +534,6 @@ services.redis.baseUrl: redis://:<redis-password>@64.102.181.16:6383
 
 Yes, the `userid` portion is blank, because as of Redis 4.x, there is no concept of users in Redis.
 
-3. Run the following commands to enable Clouddriver HA:
-
-```bash
-hal config deploy ha clouddriver enable
-hal config deploy ha clouddriver edit --redis-master-endpoint 'redis://:<redis-password>@64.102.181.16:6382' --redis-slave-endpoint 'redis://:<redis-password>@64.102.180.241:16382'
-```
 
 Observations:
 
@@ -559,3 +553,59 @@ Finally, I noticed the following during startup:
 
 - Fiat does not startup until Clouddriver is done doing validations...
 - Igor does not startup until Clouddriver is up....
+
+## Clouddriver HA
+
+Run the following commands to enable Clouddriver HA:
+
+```bash
+hal config deploy ha clouddriver enable
+hal config deploy ha clouddriver edit --redis-master-endpoint 'redis://:<redis-password>@64.102.181.16:6382' --redis-slave-endpoint 'redis://:<redis-password>@64.102.180.241:16382'
+```
+
+Followed by, `hal deploy apply`
+
+## Echo HA
+
+Run the following commands to enable Echo HA:
+
+```bash
+hal config deploy ha echo enable
+```
+
+Followed by, `hal deploy apply`
+
+## Custom Sizing
+
+Manually edit `~/.hal/config` file and make the necessary edits
+
+```bash
+customSizing:
+  spin-deck:
+    replicas: 3
+  spin-gate:
+    replicas: 3
+  spin-fiat:
+    replicas: 3
+  spin-orca:
+    replicas: 3
+  spin-clouddriver-ro:
+    replicas: 3
+  spin-clouddriver-rw:
+    replicas: 3
+  spin-clouddriver-caching:
+    replicas: 3
+  spin-igor:
+    replicas: 1
+  spin-rosca:
+    replicas: 1
+  spin-kayenta:
+    replicas: 1
+  spin-echo-scheduler:
+    replicas: 1
+  spin-echo-worker:
+    replicas: 3
+```
+
+Followed by, `hal deploy apply`
+
