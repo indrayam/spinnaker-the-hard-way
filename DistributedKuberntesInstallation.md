@@ -201,10 +201,12 @@ kubectl config set-credentials ${CONTEXT}-token-user --token $TOKEN
 ```bash
 {
 cd ~/src
-tar -xvzf hal.tar.gz (get it from Dropbox)
+# Install Java
+apt-get -y install default-jre
+ln -s /usr/lib/jvm/java-8-openjdk-amd64 /usr/local/java
+# Install Halyard
+curl -O https://raw.githubusercontent.com/spinnaker/halyard/master/install/debian/InstallHalyard.sh
 sudo bash InstallHalyard.sh
-dpkg -l | grep -i openjdk
-sudo ln -s /usr/lib/jvm/java-8-openjdk-amd64 /usr/local/java (assuming you are using openjdk)
 }
 ```
 
