@@ -206,8 +206,32 @@ apt-get -y install default-jre
 ln -s /usr/lib/jvm/java-8-openjdk-amd64 /usr/local/java
 # Install Halyard
 curl -O https://raw.githubusercontent.com/spinnaker/halyard/master/install/debian/InstallHalyard.sh
-sudo bash InstallHalyard.sh
+sudo bash InstallHalyard.sh --version 1.11.0
 }
+```
+
+That said, using the Docker version is actually a LOT more flexible
+
+```bash
+cd ~/
+echo "Clone halyard configurations private repo..."
+git clone git@github.com:indrayam/halyard-bootstrap.git
+echo "Clone kube config private repo..."
+git clone git@github.com:indrayam/kube-config.git ~/.kube-config
+
+echo "Moving ~/.kube folder, if it exists..."
+mv ~/.kube ~/.kube.bk
+echo "Moving hal folder, if it exists..."
+mv ~/.hal ~/.hal.bk
+
+mkdir -p ~/.hal
+ln -s ~/.kube-config .kube
+ln -s ~/halyard-bootstrap/configurations/play/config.with-one-account-per-cluster config
+ln -s ~/halyard-bootstrap/deployments/play default
+docker run -p 8065:8064 --name halyard -d -v ~/.hal:/home/spinnaker/.hal \
+    -v ~/halyard-bootstrap:/home/ubuntu/halyard-bootstrap \
+    -v ~/.kube-config:/home/ubuntu/.kube \
+    gcr.io/spinnaker-marketplace/halyard:stable
 ```
 
 ## Configure the Timezone
