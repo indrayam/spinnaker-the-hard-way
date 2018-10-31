@@ -215,23 +215,28 @@ That said, using the Docker version is actually a LOT more flexible
 ```bash
 cd ~/
 echo "Clone halyard configurations private repo..."
-git clone git@github.com:indrayam/halyard-bootstrap.git
+git clone git@github.com:indrayam/dothal.git ~/.dothal
 echo "Clone kube config private repo..."
-git clone git@github.com:indrayam/kube-config.git ~/.kube-config
+git clone git@github.com:indrayam/dotkube.git ~/.dotkube
+ln -s ~/.dotkube .kube
+ln -s ~/.dothal .hal
+docker run -p 8065:8064 --name halyard -d -v ~/.dothal:/home/ubuntu/.hal \
+    -v ~/.dotkube:/home/ubuntu/.kube \
+    gcr.io/spinnaker-marketplace/halyard:nightly
+```
 
-echo "Moving ~/.kube folder, if it exists..."
-mv ~/.kube ~/.kube.bk
-echo "Moving hal folder, if it exists..."
-mv ~/.hal ~/.hal.bk
+Make sure the docker container `halyard` is running by running the following command:
 
-mkdir -p ~/.hal
-ln -s ~/.kube-config .kube
-ln -s ~/halyard-bootstrap/configurations/play/config.with-one-account-per-cluster config
-ln -s ~/halyard-bootstrap/deployments/play default
-docker run -p 8065:8064 --name halyard -d -v ~/.hal:/home/spinnaker/.hal \
-    -v ~/halyard-bootstrap:/home/ubuntu/halyard-bootstrap \
-    -v ~/.kube-config:/home/ubuntu/.kube \
-    gcr.io/spinnaker-marketplace/halyard:stable
+```bash
+docker ps 
+```
+
+Exec into the docker container using `docker exec -it halyard bash`. Don't forget to setup a symlink:
+
+```bash
+cd
+ln -s /home/ubuntu/.hal .hal
+ln -s /home/ubuntu/.kube .kube 
 ```
 
 ## Configure the Timezone
