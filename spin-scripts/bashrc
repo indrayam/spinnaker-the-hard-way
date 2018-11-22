@@ -1,0 +1,10 @@
+FRONT50=http://spin-front50.spinnaker:8080
+FIAT=http://spin-fiat.spinnaker:7003
+ORCA=http://spin-orca.spinnaker:8083
+ROSCO=http://spin-rosco.spinnaker:8087
+IGOR=http://spin-igor.spinnaker:8088
+REDIS=redis://spin-redis.spinnaker:6379
+ECHO=http://spin-echo.spinnaker:8089
+CLOUDDRIVER=http://spin-clouddriver.spinnaker:7002
+DECK=http://spin-deck.spinnaker:9000
+GATE=http://spin-gate.spinnaker:8084

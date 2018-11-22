@@ -9,9 +9,10 @@ function print_plus () {
 SPINNAKER_DEV="$HOME/dev/spinnaker"
 
 for ms in clouddriver front50 deck fiat gate orca; do
+    echo
     echo "Starting $ms..."
     $SPINNAKER_DEV/scripts/$ms-start.sh
-    echo "Sleeping for 20 secs.."
+    echo "Sleeping for 20 secs to let $ms startup.."
     sleep 20
 done
 

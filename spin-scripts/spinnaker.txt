@@ -1,0 +1,14 @@
+curl -s $FRONT50/serviceAccounts | jq .
+
+curl -X POST \
+  -H "Content-type: application/json" \
+  -d '{ "name": "jenkins-admin.gen", "memberOf": ["dftcd-apps-admin", "dftcd-apps-developer"] }' \
+  $FRONT50/serviceAccounts | jq .
+
+curl -X POST $FIAT/roles/sync
+
+curl -s $FIAT/authorize/spinnaker-demo1.gen | jq .
+
+curl -X DELETE -H "Content-type: application/json"  http://spin-front50:8080/serviceAccounts/<sa-account-name>
+
+

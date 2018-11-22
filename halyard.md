@@ -21,7 +21,7 @@ hal version latest
 ### Hal Deploy
 
 ```bash
-hal deploy apply --service-names clouddriver
+hal deploy apply --service-names clouddriver front50 deck gate fiat orca
 ```
 
 ### Update Halyard

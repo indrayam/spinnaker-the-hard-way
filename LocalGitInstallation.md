@@ -295,7 +295,11 @@ sudo chown -R <userid>:staff /opt/halyard
 You're now ready to review the configurations defined in `~/.hal/config` and apply it by running
 
 ```bash
-hal deploy apply
+hal deploy apply --service-names clouddriver front50 deck gate fiat orca
+#Or
+hal deploy apply --service-names clouddriver front50 gate fiat orca
+# followed by
+hal deploy apply --service-names deck
 ```
 
 Things that happens, assuming everything goes well:
@@ -352,7 +356,16 @@ Install [ProjectManager](https://github.com/randy3k/ProjectManager) plugin and t
         },
         {
             "path": "~/.spinnaker"
-        },        
+        },
+        {
+            "path": "~/.spinnaker-local"
+        },
+        {
+            "path": "~/workspace/spinnaker-the-hard-way/spin-scripts"
+        },
+        {
+            "path": "~/dev/spinnaker/halyard"
+        },       
         {
             "path": "~/dev/spinnaker/clouddriver"
         },
@@ -409,3 +422,61 @@ git clean -dxf -e '*.iml' -e '*.ipr' -e '*.iws'
 ## Useful Commands/Hacks
 
 - `hal deploy apply --service-names deck, fiat, gate, clouddriver, orca, front50`
+
+## Maximum number of files that MacOS can open
+
+[Source: Is there a fix for the “Too many open files in system” error on OS X 10.7.1?](https://superuser.com/a/1171028)
+
+Run:
+
+`launchctl limit maxfiles`
+
+
+
+For OS X Sierra (10.12.X), the default value seems to be low. 256 by default.
+
+1. Create a file at /Library/LaunchDaemons/limit.maxfiles.plist and paste the following in (feel free to change the two numbers (which are the soft and hard limits, respectively):
+
+```bash
+<?xml version="1.0" encoding="UTF-8"?>  
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"  
+        "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">  
+  <dict>
+    <key>Label</key>
+    <string>limit.maxfiles</string>
+    <key>ProgramArguments</key>
+    <array>
+      <string>launchctl</string>
+      <string>limit</string>
+      <string>maxfiles</string>
+      <string>64000</string>
+      <string>524288</string>
+    </array>
+    <key>RunAtLoad</key>
+    <true/>
+    <key>ServiceIPC</key>
+    <false/>
+  </dict>
+</plist>
+```
+
+2. Change the owner of your new file:
+
+`sudo chown root:wheel /Library/LaunchDaemons/limit.maxfiles.plist`
+
+3. Load these new settings:
+
+`sudo launchctl load -w /Library/LaunchDaemons/limit.maxfiles.plist`
+
+4. Finally, check that the limits are correct:
+
+`launchctl limit maxfiles`
+
+5. Check your ulimit settings. I am not sure if we need to increase those as well, or will the System Settings done in the steps above will be enough
+
+```bash
+
+ulimit -a
+ulimit -n 8192
+```
