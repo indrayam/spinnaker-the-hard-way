@@ -1,4 +1,8 @@
-# Get Nginx updated on ENTRY VM
+# Setup TCP Proxy on ENTRY VM
+
+This lab will help you configure Nginx powered TCP proxy that will front-end the Kubernetes Cluster. 
+
+## Update Nginx
 
 Update Nginx to the latest version offered by `nginx.org`
 
@@ -18,7 +22,7 @@ sudo apt-get remove nginx #Remove existing Nginx install (if any)
 sudo apt-get install nginx
 ```
 
-## Update /etc/nginx/nginx.conf on ENTRY VM
+## Update /etc/nginx/nginx.conf
 
 ```bash
 {
@@ -30,7 +34,7 @@ sudo apt-get install nginx
 include /etc/nginx/tcppassthrough.conf;
 ```
 
-## TCP LB and SSL passthrough on ENTRY VM
+## TCP LB and SSL passthrough
 
 Update the `/etc/nginx/tcppassthrough.conf` file with the IP addresses of the 9 Kubernetes Worker Nodes. Do not worry about the two port number stes (31092 and 31391) shown below. This will need to get updated after Heptio Contour Ingress Controller is installed (see below)
 
