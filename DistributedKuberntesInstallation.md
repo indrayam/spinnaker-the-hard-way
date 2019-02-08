@@ -4,8 +4,6 @@ This tutorial walks you through setting up Spinnaker (on Kubernetes) The Hard wa
 
 ## Labs
 
-This tutorial assumes you have access to programmable infrastructure, either self-hosted or using public cloud.
-
 * [Prerequisites](docs/01-prerequisites.md)
 * [Setup TCP Proxy on ENTRY VM](docs/02-setup-tcp-proxy.md)
 * [Setup NFS Client(s) and Server](docs/03-setup-nfs-client-server.md)

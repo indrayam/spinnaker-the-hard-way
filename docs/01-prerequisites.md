@@ -1,7 +1,11 @@
-# Spinnaker Distributed Installation Pre-requisites
+# Pre-requisites
+
+This tutorial assumes you have access to programmable infrastructure, either self-hosted or using public cloud. I decided to run it on my internal OpenStack cluster. You can follow this along on any Public Cloud provider offering IaaS. [Digital Ocean](https://www.digitalocean.com/) would be a good choice.
+
+Here are the prerequisites and/or assumptions for the rest of the Labs:
 
 - Spinnaker will be installed on Kubernetes
-- Kubernetes Cluster is already avaialble. My setup highlights:
+- Kubernetes Cluster is already available. My setup highlights:
   - One VM acting as Control Plane Master (4vCPUx8GB)
   - 9 Cluster Nodes (4vCPUx8GB) each running Ubuntu 16.04
   - Kubernetes version: 1.13.3 version
@@ -12,4 +16,3 @@
 
 Let's talk about the additional VM. You can choose to install Halyard, TCP Proxy (Nginx) and NFS Server each on a separate VM. However, I decided to keep it simple and use a single VM for that. So when I refer to VM running Nginx as a TCP Proxy or Halyard or NFS Server, I am talking about this Node. Let's call it `ENTRY` VM.
 
-I decided to run it on my internal OpenStack cluster. You can follow this along on any Public Cloud provider offering IaaS. [Digital Ocean](https://www.digitalocean.com/) would be a good choice.
