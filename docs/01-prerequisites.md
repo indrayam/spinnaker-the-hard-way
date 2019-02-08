@@ -2,6 +2,8 @@
 
 This tutorial assumes you have access to programmable infrastructure, either self-hosted or using public cloud. I decided to run it on my internal OpenStack cluster. You can follow this along on any Public Cloud provider offering IaaS. [Digital Ocean](https://www.digitalocean.com/) would be a good choice.
 
+![Spinnaker Distributed Install](https://storage.googleapis.com/us-east-4-anand-files/misc-files/spinnaker-distributed-install.png)
+
 Here are the prerequisites and/or assumptions for the rest of the Labs:
 
 - Spinnaker will be installed on Kubernetes

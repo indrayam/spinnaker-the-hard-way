@@ -1,5 +1,7 @@
 # Spinnaker The Hard Way
 
+![Spinnaker Distributed Install](https://storage.googleapis.com/us-east-4-anand-files/misc-files/spinnaker-distributed-install.png)
+
 This tutorial walks you through setting up Spinnaker (on Kubernetes) The Hard way. Needless to say, everything about this documentation is inspired by Kelsey Hightower's masterpiece **[Kubernetes The Hard Way](https://github.com/kelseyhightower/kubernetes-the-hard-way)**. Like the original document, this Spinnaker guide is not for people looking for a fully automated command to bring up a Kubernetes cluster with Spinnaker installed.
 
 ## Labs
