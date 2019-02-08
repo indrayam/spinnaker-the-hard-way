@@ -14,5 +14,7 @@ Here are the prerequisites and/or assumptions for the rest of the Labs:
   - Running TCP Proxy (Nginx) for my Kubernetes Cluster
   - Run NFS Server for Minion installation
 
-Let's talk about the additional VM. You can choose to install Halyard, TCP Proxy (Nginx) and NFS Server each on a separate VM. However, I decided to keep it simple and use a single VM for that. So when I refer to VM running Nginx as a TCP Proxy or Halyard or NFS Server, I am talking about this Node. Let's call it `ENTRY` VM.
+Let's talk about the additional VM. You can choose to install Halyard, TCP Proxy (Nginx) and NFS Server each on a separate VM. However, I decided to keep it simple and use a single VM for that. So when I refer to VM running Nginx as a TCP Proxy or Halyard or NFS Server, I am talking about this Node. 
+
+We are going to call this VM  **ENTRY VM** throughout the rest of the Labs.
 
