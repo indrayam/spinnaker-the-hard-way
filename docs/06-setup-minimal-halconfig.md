@@ -17,6 +17,8 @@ Not sure if this worked though. Not at the UI level
 ## Configure Spinnaker Kubernetes Account for Installation
 
 ```bash
+hal config provider kubernetes enable
+
 hal config provider kubernetes account add code-work-alln --provider-version v2 --context admin@code-work-alln
 
 hal config features edit --artifacts true

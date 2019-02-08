@@ -32,6 +32,7 @@ spring:
 ## Configure LDAP Authentication
 
 ```bash
+hal config security authn ldap enable
 hal config security authn ldap edit --user-dn-pattern="cn={0},OU=Employees,OU=Cisco Users" --url=ldap://ds.cisco.com:3268/DC=cisco,DC=com
 # Note, I had to remove the space betweeen Cisco and Users when running this command and later edit the ~/.hal/config file 
 # by adding the space
@@ -68,6 +69,8 @@ hal config security authz ldap edit \
     --group-search-base OU=Standard,OU=CiscoGroups,dc=cisco,dc=com \
     --group-search-filter "(member{0})" \
     --group-role-attributes cn
+hal config security authz edit --type ldap
+hal config security authz enable
 ```
 
 Once the command is run, open up ~/.hal/config file, edit `CiscoUsers` to `Cisco Users` and `CiscoGroups` to `Cisco Groups`. Why not add it in the command? Because hal command did not like the spaces. This might change later. Also, add the following additional LDAP criterias:
