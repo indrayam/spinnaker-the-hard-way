@@ -1,6 +1,8 @@
-# Advanced Hal Config
+# Advanced Halyard Configuration
 
-## Advanced Nerd Knobs: Configure Email Notification Support
+This section will document all the advanced Spinnaker nerd knobs that I have been able to understand and configure in my own Spinnaker setup.
+
+## Configure Email Notification Support
 
 1. Create echo-local.yml file as below:
 
@@ -27,7 +29,7 @@ spring:
 3. Run: `hal deploy apply --service-names echo`
 
 
-## Advanced Nerd Knobs: Configure LDAP Authentication
+## Configure LDAP Authentication
 
 ```bash
 hal config security authn ldap edit --user-dn-pattern="cn={0},OU=Employees,OU=Cisco Users" --url=ldap://ds.cisco.com:3268/DC=cisco,DC=com
@@ -53,7 +55,7 @@ ldap:
   userSearchBase: OU=Cisco Users,DC=cisco, DC=com
 ```
 
-## Advanced Nerd Knobs: Configure LDAP Groups for Authorizations
+## Configure LDAP Groups for Authorizations
 
 Helpful command: `hal config security authz ldap edit --help`
 
@@ -111,7 +113,7 @@ auth:
 **Note:**
 I cannot make ldaps work in a Kubernetes environment. Keeps giving me LDAPS (LDAP over TLS) connection failed. [Reference 1](https://community.spinnaker.io/t/ldap-authentication-ldaps-protocol/386), [Reference 2](https://langui.sh/2009/03/14/checking-a-remote-certificate-chain-with-openssl/)
 
-## Advanced Nerd Knobs: Configure External Redis
+## Configure External Redis
 
 Using a single Redis instance will not scale in the end. Eventually, you are better off having the Microservices use their own Redis instance. The following Microservices have dependency on Redis:
 
@@ -170,7 +172,7 @@ Finally, I noticed the following during startup:
 - Fiat does not startup until Clouddriver is done doing validations...
 - Igor does not startup until Clouddriver is up....
 
-## Advanced Nerd Knobs: Clouddriver HA
+## Clouddriver HA
 
 Run the following commands to enable Clouddriver HA:
 
@@ -181,7 +183,7 @@ hal config deploy ha clouddriver edit --redis-master-endpoint 'redis://:<redis-p
 
 Followed by, `hal deploy apply`
 
-## Advanced Nerd Knobs: Echo HA
+## Echo HA
 
 Run the following commands to enable Echo HA:
 
@@ -191,7 +193,7 @@ hal config deploy ha echo enable
 
 Followed by, `hal deploy apply`
 
-## Advanced Nerd Knobs: Custom Sizing
+## Custom Sizing
 
 Manually edit `~/.hal/config` file and make the necessary edits
 
