@@ -486,32 +486,6 @@ echo $PASSWORD | hal config ci jenkins master add my-jenkins-master \
 }
 ```
 
-## Configure Email Notification Support
-
-1. Create echo-local.yml file as below:
-
-```bash
-mail:
-  enabled: true
-  from: noreply@cisco.com
-spring:
-  mail:
-    host: outbound.cisco.com
-    port: 25
-    properties:
-      mail:
-        smtp:
-          auth: false
-          starttls:
-            enable: true
-        transport:
-          protocol: smtp
-        debug: true
-```
-
-2. Copy the file into ~/.hal/default/profiles/ folder
-3. Run: `hal deploy apply --service-names echo`
-
 ## Install Spinnaker
 
 ```bash
@@ -793,7 +767,35 @@ hal config security api edit \
 hal deploy apply
 ```
 
-## Configure LDAP Authentication
+
+## Advanced Nerd Knobs: Configure Email Notification Support
+
+1. Create echo-local.yml file as below:
+
+```bash
+mail:
+  enabled: true
+  from: noreply@cisco.com
+spring:
+  mail:
+    host: outbound.cisco.com
+    port: 25
+    properties:
+      mail:
+        smtp:
+          auth: false
+          starttls:
+            enable: true
+        transport:
+          protocol: smtp
+        debug: true
+```
+
+2. Copy the file into ~/.hal/default/profiles/ folder
+3. Run: `hal deploy apply --service-names echo`
+
+
+## Advanced Nerd Knobs: Configure LDAP Authentication
 
 ```bash
 hal config security authn ldap edit --user-dn-pattern="cn={0},OU=Employees,OU=Cisco Users" --url=ldap://ds.cisco.com:3268/DC=cisco,DC=com
@@ -819,7 +821,7 @@ ldap:
   userSearchBase: OU=Cisco Users,DC=cisco, DC=com
 ```
 
-## Configure LDAP Groups for Authorizations
+## Advanced Nerd Knobs: Configure LDAP Groups for Authorizations
 
 Helpful command: `hal config security authz ldap edit --help`
 
@@ -877,7 +879,7 @@ auth:
 **Note:**
 I cannot make ldaps work in a Kubernetes environment. Keeps giving me LDAPS (LDAP over TLS) connection failed. [Reference 1](https://community.spinnaker.io/t/ldap-authentication-ldaps-protocol/386), [Reference 2](https://langui.sh/2009/03/14/checking-a-remote-certificate-chain-with-openssl/)
 
-## Configure External Redis
+## Advanced Nerd Knobs: Configure External Redis
 
 Using a single Redis instance will not scale in the end. Eventually, you are better off having the Microservices use their own Redis instance. The following Microservices have dependency on Redis:
 
@@ -936,7 +938,7 @@ Finally, I noticed the following during startup:
 - Fiat does not startup until Clouddriver is done doing validations...
 - Igor does not startup until Clouddriver is up....
 
-## Clouddriver HA
+## Advanced Nerd Knobs: Clouddriver HA
 
 Run the following commands to enable Clouddriver HA:
 
@@ -947,7 +949,7 @@ hal config deploy ha clouddriver edit --redis-master-endpoint 'redis://:<redis-p
 
 Followed by, `hal deploy apply`
 
-## Echo HA
+## Advanced Nerd Knobs: Echo HA
 
 Run the following commands to enable Echo HA:
 
@@ -957,36 +959,36 @@ hal config deploy ha echo enable
 
 Followed by, `hal deploy apply`
 
-## Custom Sizing
+## Advanced Nerd Knobs: Custom Sizing
 
 Manually edit `~/.hal/config` file and make the necessary edits
 
 ```bash
 customSizing:
-  spin-deck:
-    replicas: 3
-  spin-gate:
-    replicas: 3
-  spin-fiat:
-    replicas: 3
-  spin-orca:
-    replicas: 3
-  spin-clouddriver-ro:
-    replicas: 3
-  spin-clouddriver-rw:
-    replicas: 3
-  spin-clouddriver-caching:
-    replicas: 3
-  spin-igor:
-    replicas: 1
-  spin-rosca:
-    replicas: 1
-  spin-kayenta:
-    replicas: 1
-  spin-echo-scheduler:
-    replicas: 1
-  spin-echo-worker:
-    replicas: 3
+   spin-rosca:
+     replicas: 1
+   spin-echo-scheduler:
+     replicas: 1
+   spin-clouddriver-caching:
+     replicas: 1
+   spin-echo-worker:
+     replicas: 1
+   spin-clouddriver-ro:
+     replicas: 1
+   spin-deck:
+     replicas: 1
+   spin-gate:
+     replicas: 1
+   spin-igor:
+     replicas: 1
+   spin-fiat:
+     replicas: 1
+   spin-orca:
+     replicas: 1
+   spin-clouddriver-rw:
+     replicas: 1
+   spin-kayenta:
+     replicas: 1
 ```
 
 Followed by, `hal deploy apply`
