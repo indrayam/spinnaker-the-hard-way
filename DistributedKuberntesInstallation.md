@@ -5,14 +5,14 @@
 - Spinnaker will be installed on Kubernetes
 - Kubernetes Cluster is already avaialble. My setup highlights:
   - One VM acting as Control Plane Master (4vCPUx8GB)
-  - 5 Cluster Nodes (4vCPUx8GB) each running Ubuntu 16.04
-  - Kubernetes version: 1.11.2 version
-- Use an additional VM running Ubuntu 16.04 for the following purposes: 
+  - 9 Cluster Nodes (4vCPUx8GB) each running Ubuntu 16.04
+  - Kubernetes version: 1.13.3 version
+- Use an additional VM (2vCPUx4GB) running Ubuntu 16.04 for the following purposes: 
   - Running Halyard
-  - Running TCP Proxy for my Kubernetes Cluster
+  - Running TCP Proxy (Nginx) for my Kubernetes Cluster
   - Run NFS Server for Minion installation
 
-You can choose to install each on a separate VM. However, I decided to keep it simple and use a single VM for that. So when I refer to VM running Nginx as a TCP Proxy or Halyard or NFS Server, I am talking about this Node. Let's call it `ENTRY` VM.
+Let's talk about the additional VM. You can choose to install Halyard, TCP Proxy (Nginx) and NFS Server each on a separate VM. However, I decided to keep it simple and use a single VM for that. So when I refer to VM running Nginx as a TCP Proxy or Halyard or NFS Server, I am talking about this Node. Let's call it `ENTRY` VM.
 
 I decided to run it on my internal OpenStack cluster. You can follow this along on any Public Cloud provider offering IaaS. [Digital Ocean](https://www.digitalocean.com/) would be a good choice.
 
@@ -50,28 +50,38 @@ include /etc/nginx/tcppassthrough.conf;
 
 ## TCP LB and SSL passthrough on ENTRY VM
 
-```bash
+Update the `/etc/nginx/tcppassthrough.conf` file with the IP addresses of the 9 Kubernetes Worker Nodes. Do not worry about the two port number stes (31092 and 31391) shown below. This will need to get updated after Heptio Contour Ingress Controller is installed (see below)
 
-# This is what /etc/nginx/tcppassthrough.conf looks like
+```bash
+## tcp LB  and SSL passthrough for backend ##
 stream {
+
     log_format combined '$remote_addr - - [$time_local] $protocol $status $bytes_sent $bytes_received $session_time "$upstream_addr"';
 
     access_log /var/log/nginx/stream-access.log combined;
 
     upstream httpenvoy {
-        server 64.102.179.84:31913 max_fails=3 fail_timeout=10s;
-        server 64.102.178.218:31913 max_fails=3 fail_timeout=10s;
-        server 64.102.179.202:31913 max_fails=3 fail_timeout=10s;
-        server 64.102.179.80:31913 max_fails=3 fail_timeout=10s;
-        server 64.102.179.228:31913 max_fails=3 fail_timeout=10s;
+        server 192.168.1.19:11111 max_fails=3 fail_timeout=10s;
+        server 192.168.1.20:11111 max_fails=3 fail_timeout=10s;
+        server 192.168.1.9:11111 max_fails=3 fail_timeout=10s;
+        server 192.168.1.16:11111 max_fails=3 fail_timeout=10s;
+        server 192.168.1.27:11111 max_fails=3 fail_timeout=10s;
+        server 192.168.1.15:11111 max_fails=3 fail_timeout=10s;
+        server 192.168.1.24:11111 max_fails=3 fail_timeout=10s;
+        server 192.168.1.28:11111 max_fails=3 fail_timeout=10s;
+        server 192.168.1.18:11111 max_fails=3 fail_timeout=10s;
     }
 
     upstream httpsenvoy {
-        server 64.102.179.84:31913 max_fails=3 fail_timeout=10s;
-        server 64.102.178.218:31913 max_fails=3 fail_timeout=10s;
-        server 64.102.179.202:31913 max_fails=3 fail_timeout=10s;
-        server 64.102.179.80:31913 max_fails=3 fail_timeout=10s;
-        server 64.102.179.228:31913 max_fails=3 fail_timeout=10s;
+        server 192.168.1.19:22222 max_fails=3 fail_timeout=10s;
+        server 192.168.1.20:22222 max_fails=3 fail_timeout=10s;
+        server 192.168.1.9:22222 max_fails=3 fail_timeout=10s;
+        server 192.168.1.16:22222 max_fails=3 fail_timeout=10s;
+        server 192.168.1.27:22222 max_fails=3 fail_timeout=10s;
+        server 192.168.1.15:22222 max_fails=3 fail_timeout=10s;
+        server 192.168.1.24:22222 max_fails=3 fail_timeout=10s;
+        server 192.168.1.28:22222 max_fails=3 fail_timeout=10s;
+        server 192.168.1.18:22222 max_fails=3 fail_timeout=10s;
     }
 
     server {
@@ -104,24 +114,31 @@ sudo chown nobody:nogroup /var/nfs/minio
 
 sudo vim /etc/exports
 
-/var/nfs/minio  64.102.178.0/23(rw,sync,no_subtree_check) 64.102.186.0/23(rw,sync,no_subtree_check)
+# The two address ranges are to make sure that clients ONLY from these ranges can connect to the NFS server
+/var/nfs/minio  192.168.1.0/24(rw,sync,no_subtree_check)
+#/var/nfs/minio  64.102.178.0/23(rw,sync,no_subtree_check) 64.102.186.0/23(rw,sync,no_subtree_check)
 sudo systemctl restart nfs-kernel-server
 ```
 
-## Setup NFS Client on all 5 Kubernetes Cluster Nodes
+## Setup NFS Client on all 9 Kubernetes Cluster Nodes
+
+The IP address portion in this line:
+`sudo mount 192.168.1.14:/var/nfs/minio /nfs/minio`
+
+should be the IP address of the NFS server
 
 ```bash
 sudo apt-get install nfs-common
 {
     sudo mkdir -p /nfs/minio
-    sudo mount 64.102.179.211:/var/nfs/minio /nfs/minio
+    sudo mount 192.168.1.14:/var/nfs/minio /nfs/minio
     df -h
 }
 ```
 
 ```bash
 sudo vim /etc/fstab
-64.102.179.211:/var/nfs/minio /nfs/minio nfs auto,nofail,noatime,nolock,intr,tcp,actimeo=1800 0 0
+192.168.1.14:/var/nfs/minio /nfs/minio nfs auto,nofail,noatime,nolock,intr,tcp,actimeo=1800 0 0
 sudo umount /nfs/minio (if you need to)
 ```
 
@@ -206,7 +223,7 @@ apt-get -y install default-jre
 ln -s /usr/lib/jvm/java-8-openjdk-amd64 /usr/local/java
 # Install Halyard
 curl -O https://raw.githubusercontent.com/spinnaker/halyard/master/install/debian/InstallHalyard.sh
-sudo bash InstallHalyard.sh --version 1.11.0
+sudo bash InstallHalyard.sh --version 1.15.0
 }
 ```
 
@@ -250,11 +267,11 @@ Not sure if this worked though. Not at the UI level
 ## Configure Spinnaker Kubernetes Account for Installation
 
 ```bash
-hal config provider kubernetes account add spinnaker-code --provider-version v2 --context spinnaker-code
+hal config provider kubernetes account add code-work-alln --provider-version v2 --context admin@code-work-alln
 
 hal config features edit --artifacts true
 
-hal config deploy edit --type distributed --account-name spinnaker-code
+hal config deploy edit --type distributed --account-name code-work-alln
 
 ```
 
@@ -277,7 +294,6 @@ PASSWORD='<password>'
 USERNAME_PASSWORD_FILE='/home/ubuntu/.bitbucket-user'
 echo ${USERNAME}:${PASSWORD} > $USERNAME_PASSWORD_FILE
 GITSCM_HTTP_ARTIFACT_ACCOUNT_NAME=automation-gitscm
-hal config features edit --artifacts true
 hal config artifact http enable
 hal config artifact http account add ${GITSCM_HTTP_ARTIFACT_ACCOUNT_NAME} \
     --username-password-file $USERNAME_PASSWORD_FILE
@@ -289,10 +305,9 @@ hal config artifact http account add ${GITSCM_HTTP_ARTIFACT_ACCOUNT_NAME} \
 ```bash
 {
 TOKEN='<password>'
-TOKEN_FILE='/home/ubuntu/.github-token'
+TOKEN_FILE='/home/ubuntu/.dothal/tokens/github-token'
 echo $TOKEN > $TOKEN_FILE
 GITHUB_ARTIFACT_ACCOUNT_NAME=indrayam-github
-hal config features edit --artifacts true
 hal config artifact github enable
 hal config artifact github account add $GITHUB_ARTIFACT_ACCOUNT_NAME \
     --token-file $TOKEN_FILE
@@ -330,17 +345,125 @@ hal config artifact github account add $GITHUB_ARTIFACT_ACCOUNT_NAME \
 
 ## Configure Persistent Storage (Minio)
 
+Create Minio Kubernetes files:
+
+- **minio-standalone-pv.yml:** Set the IP address of the NFS server
+
+```yaml
+apiVersion: v1
+kind: PersistentVolume
+metadata:
+  name: minio-pv
+spec:
+  capacity:
+    storage: 20Gi
+  accessModes:
+  - ReadWriteOnce
+  nfs:
+    path: /var/nfs/minio
+    server: 192.168.1.14
+  persistentVolumeReclaimPolicy: Retain
+```
+
+- **minio-standalone-pvc.yml:**
+
+```
+apiVersion: v1
+kind: PersistentVolumeClaim
+metadata:
+  # This name uniquely identifies the PVC. This is used in deployment.
+  name: minio-pv-claim
+spec:
+  # Read more about access modes here: http://kubernetes.io/docs/user-guide/persistent-volumes/#access-modes
+  accessModes:
+    # The volume is mounted as read-write by a single node
+    - ReadWriteOnce
+  resources:
+    # This is the request for storage. Should be available in the cluster.
+    requests:
+      storage: 10Gi
+  storageClassName: ""
+```
+
+- `minio-standalone-deployment.yml:` Update values for *MINIO_ACCESS_KEY* and *MINIO_SECRET_KEY*
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  # This name uniquely identifies the Deployment
+  name: minio-deployment
+spec:
+  strategy:
+    type: Recreate
+  template:
+    metadata:
+      labels:
+        # Label is used as selector in the service.
+        app: minio
+    spec:
+      # Refer to the PVC created earlier
+      volumes:
+      - name: storage
+        persistentVolumeClaim:
+          # Name of the PVC created earlier
+          claimName: minio-pv-claim
+      containers:
+      - name: minio
+        # Pulls the default Minio image from Docker Hub
+        image: minio/minio
+        args:
+        - server
+        - /storage
+        env:
+        # Minio access key and secret key
+        - name: MINIO_ACCESS_KEY
+          value: "..."
+        - name: MINIO_SECRET_KEY
+          value: "..."
+        ports:
+        - containerPort: 9000
+        # Mount the volume into the pod
+        volumeMounts:
+        - name: storage # must match the volume name, above
+          mountPath: "/storage"
+```
+
+- `minio-standalone-service.yml:` Set the Service Type to ClusterIP
+
+```yaml
+apiVersion: v1
+kind: Service
+metadata:
+  # This name uniquely identifies the service
+  name: minio-service
+spec:
+  type: ClusterIP
+  ports:
+    - port: 9000
+      targetPort: 9000
+      protocol: TCP
+  selector:
+    # Looks for labels `app:minio` in the namespace and applies the spec
+    app: minio
+```
+
+Once these files are created and saved in `~/src` folder, run the following commands:
+
 ```bash
 cd ~/src
-vim ./minio-standalone-pv.yml (Set the IP address of the NFS server)
 k apply -f ./minio-standalone-pv.yml
 k apply -f ./minio-standalone-pvc.yml
 k apply -f ./minio-standalone-deployment.yml
-vim ./minio-standalone-service.yml (Set the Service Type to Cluster IP)
 k apply -f ./minio-standalone-service.yml
+```
+
+Run the following `hal` command to configure persistent storage (minio):
+
+```bash
 {
-MINIO_ACCESS_KEY="<access-key>"
-MINIO_SECRET_KEY="<secret-key>"
+MINIO_ACCESS_KEY="..."
+MINIO_SECRET_KEY="..."
 ENDPOINT="http://minio-service:9000"
 echo $MINIO_SECRET_KEY | hal config storage s3 edit --endpoint $ENDPOINT \
     --access-key-id $MINIO_ACCESS_KEY \
@@ -355,7 +478,7 @@ hal config storage edit --type s3
 {
 hal config ci jenkins enable
 
-PASSWORD='<password>'
+PASSWORD='Maltose$.123'
 echo $PASSWORD | hal config ci jenkins master add my-jenkins-master \
     --address https://ci6.cisco.com \
     --username jenkins-ci.gen \
@@ -392,7 +515,7 @@ spring:
 ## Install Spinnaker
 
 ```bash
-VERSION="1.9.3"
+VERSION="1.12.1"
 hal config version edit --version $VERSION
 hal deploy apply
 cd ~/.hal/default/profiles
@@ -404,42 +527,270 @@ hal deploy apply
 
 **Install Heptio Contour Ingress Controller:**
 
+Source(s):
+- [heptio/contour](https://github.com/heptio/contour)
+- [Tutorial: Deploy web applications on Kubernetes with Contour and Let's Encrypt](https://github.com/heptio/contour/blob/master/docs/cert-manager.md)
+
 ```bash
+cd ~/src
+curl -L -O https://j.hept.io/contour-deployment-rbac
+mv contour-deployment-rbac contour-deployment-rbac.yaml
+vim contour-deployment-rbac.yaml
+# Change the last line (Service type) from LoadBalancer to NodePort
 k apply -f contour-deployment-rbac.yml
 k -n heptio-contour get svc
+kn default
 ```
 
-**Cert-Manager (self-signed):**
+Use the output of the `k -n heptio-contour get svc` to figure out what NodePort is mapped to Port(s) **80** and **443**. For example, let's say the output looks like this:
+
+```
+NAME      TYPE       CLUSTER-IP      EXTERNAL-IP   PORT(S)                      AGE
+contour   NodePort   10.101.167.20   <none>        80:31092/TCP,443:31391/TCP   3h58m
+```
+
+Since port 80 is mapped to 31092 and 443 is mapped to 31391, update `/etc/nginx/tcppassthrough.conf` file's port numbers so that the section `httpenvoy` uses 31092 and the section `httpsenvoy` uses 31391:
+
+```bash
+
+stream {
+
+    log_format combined '$remote_addr - - [$time_local] $protocol $status $bytes_sent $bytes_received $session_time "$upstream_addr"';
+
+    access_log /var/log/nginx/stream-access.log combined;
+
+    upstream httpenvoy {
+        server 192.168.1.19:31092 max_fails=3 fail_timeout=10s;
+        server 192.168.1.20:31092 max_fails=3 fail_timeout=10s;
+        server 192.168.1.9:31092 max_fails=3 fail_timeout=10s;
+        server 192.168.1.16:31092 max_fails=3 fail_timeout=10s;
+        server 192.168.1.27:31092 max_fails=3 fail_timeout=10s;
+        server 192.168.1.15:31092 max_fails=3 fail_timeout=10s;
+        server 192.168.1.24:31092 max_fails=3 fail_timeout=10s;
+        server 192.168.1.28:31092 max_fails=3 fail_timeout=10s;
+        server 192.168.1.18:31092 max_fails=3 fail_timeout=10s;
+    }
+
+    upstream httpsenvoy {
+        server 192.168.1.19:31391 max_fails=3 fail_timeout=10s;
+        server 192.168.1.20:31391 max_fails=3 fail_timeout=10s;
+        server 192.168.1.9:31391 max_fails=3 fail_timeout=10s;
+        server 192.168.1.16:31391 max_fails=3 fail_timeout=10s;
+        server 192.168.1.27:31391 max_fails=3 fail_timeout=10s;
+        server 192.168.1.15:31391 max_fails=3 fail_timeout=10s;
+        server 192.168.1.24:31391 max_fails=3 fail_timeout=10s;
+        server 192.168.1.28:31391 max_fails=3 fail_timeout=10s;
+        server 192.168.1.18:31391 max_fails=3 fail_timeout=10s;
+    }
+
+    server {
+        listen 80;
+        proxy_pass httpenvoy;
+        proxy_next_upstream on;
+    }
+
+    server {
+        listen 443;
+        proxy_pass httpsenvoy;
+        proxy_next_upstream on;
+    }
+}
+```
+
+**Install KUARD demo app**
+
+```bash
+cd ~/src
+curl -L -O https://j.hept.io/contour-kuard-example
+mv contour-kuard-example contour-kuard-example.yaml
+kn default
+k apply -f contour-kuard-example.yaml
+```
+
+If you have `wercker/stern` installed, run the following command. It should show messages reflecting the fact that Heptio Contour was able to react to the new Ingress Object created in Kubernetes:
+
+`stern contour`
+
+You can also tail the Nginx stream log on the ENTRY VM machine to see if the TCP Proxy received and forwarded the request appropriately:
+
+```
+tail -f /var/log/nginx/stream-access.log
+```
+
+You should see an output like:
+
+```
+173.37.95.214 - - [08/Feb/2019:14:47:21 +0000] TCP 200 0 0 0.004 "192.168.1.16:31092"
+```
+
+Assuming `kuard1-code.cisco.com` is the DNS entry that points to the ENTRY VM's TCP Proxy, open `kuard1-code.cisco.com` in the browser. You should see the KUARD app.  
+
+**Jetstack Cert Manager (self-signed):**
+
+Source(s):
+- [Installing cert-manager](https://docs.cert-manager.io/en/latest/getting-started/install.html)
+- [Setting up CA Issuers](https://docs.cert-manager.io/en/latest/tasks/issuers/setup-ca.html)
+- [Automatically creating Certificates for Ingress resources](https://docs.cert-manager.io/en/latest/tasks/issuing-certificates/ingress-shim.html)
+
+Install Jetstack cert manager
+
+```bash
+k create namespace cert-manager
+kn cert-manager
+kubectl label namespace cert-manager certmanager.k8s.io/disable-validation=true
+kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.6/deploy/manifests/00-crds.yaml
+kubectl apply -f https://raw.githubusercontent.com/jetstack/cert-manager/release-0.6/deploy/manifests/cert-manager.yaml
+```
 
 ```bash
 openssl genrsa -out ca.key 4096
 openssl req -x509 -new -nodes -key ca.key -subj "/CN=Cisco CoDE Team" -days 3650 -reqexts v3_req -extensions v3_ca -out ca.crt
 k create secret tls ca-key-pair --cert=ca.crt --key=ca.key --namespace=cert-manager
+```
+
+Create `ca-clusterissuer.yaml` file in `~/src`:
+
+```yaml
+apiVersion: certmanager.k8s.io/v1alpha1
+kind: ClusterIssuer
+metadata:
+  name: ca-issuer
+  namespace: cert-manager
+spec:
+  ca:
+    secretName: ca-key-pair
+```
+
+Run the following command to setup the ClusterIssuer in Kubernetes:
+
+```
 k apply -f ./ca-clusterissuer.yml
 ```
 
-**Install Ingress Objects:**
+**Install Ingress Objects with Jetstack Annotations:**
+
+Update the `contour-kuard-example.yaml` file's Ingress section (at the bottom of the file) with this content:
+
+```yaml
+---
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: kuard
+  labels:
+    app: kuard
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    certmanager.k8s.io/cluster-issuer: "ca-issuer"
+    ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  tls:
+  - secretName: kuard1-code
+    hosts:
+    - kuard1-code.cisco.com
+  rules:
+  - host: kuard1-code.cisco.com
+    http:
+      paths:
+      - backend:
+          serviceName: kuard
+          servicePort: 80
+---
+```
+
+Apply the changes to Kubernetes:
 
 ```bash
-k apply -f ./spinnaker-code-ingress-https.yml -n spinnaker
-k apply -f ./spinnakerapi-code-ingress-https.yml -n spinnaker
+kn default
+k apply -f contour-kuard-example.yaml
+k get secret
+# A new secret is created called kuard1-code
+```
+
+**Getting your MacOS to trust the self-signed cert**
+
+```bash
+echo quit | openssl s_client -showcerts -servername kuard1-code.cisco.com -connect kuard1-code.cisco.com:443 > kuard1-code.pem
+vim kuard1-code.pem
+# Delete everything above and below the BEGIN CERTIFICATE and END CERTIFICATE section
+```
+
+- Open KeyChain Access on your MacOS
+- Drag and drop `kuard1-code.pem` into `All Items` Category of KeyChain Access tool
+- Click on `Certificates` category
+- Double-click the certificate
+- Expand "Trust" dropdown
+- Select "Always Trust"
+- Open https://kuard1-code.cisco.com in Incognito Window
+
+**Create Ingress Objects for Spinnaker**
+
+Create `spinnaker1-code-ingress-https.yml` in `~/src`. If you want to create an Ingress resource without cert-manager features, remove the `annotations` and `spec>tls` blocks:
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: spinnaker-deck
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    certmanager.k8s.io/cluster-issuer: "ca-issuer"
+    ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  tls:
+  - secretName: spinnaker-deck-tls
+    hosts:
+    - spinnaker1-code.cisco.com
+  rules:
+  - host: spinnaker1-code.cisco.com
+    http:
+      paths:
+      - backend:
+          serviceName: spin-deck
+          servicePort: 9000
+```
+
+Create `spinnaker1api-code-ingress-https.yml` in `~/src`. If you want to create an Ingress resource without cert-manager features, remove the `annotations` and `spec>tls` blocks:
+
+```yaml
+apiVersion: extensions/v1beta1
+kind: Ingress
+metadata:
+  name: spinnaker-gate
+  annotations:
+    kubernetes.io/tls-acme: "true"
+    certmanager.k8s.io/cluster-issuer: "ca-issuer"
+    ingress.kubernetes.io/force-ssl-redirect: "true"
+spec:
+  tls:
+  - secretName: spinnaker-gate-tls
+    hosts:
+    - spinnaker1api-code.cisco.com
+  rules:
+  - host: spinnaker1api-code.cisco.com
+    http:
+      paths:
+      - backend:
+          serviceName: spin-gate
+          servicePort: 8084
+```
+
+```bash
+kn spinnaker
+k apply -f ./spinnaker1-code-ingress-https.yml -n spinnaker
+k apply -f ./spinnaker1api-code-ingress-https.yml -n spinnaker
 ```
 
 ## Update Base URLs for Spinnaker UI (spin-deck) and API Gateway (spin-gate)
 
 ```bash
-
 hal config security ui edit \
-    --override-base-url http://spinnaker-code.cisco.com
-
-hal config security ui edit \
-    --override-base-url https://spinnaker-code.cisco.com
+    --override-base-url https://spinnaker1-code.cisco.com
 
 hal config security api edit \
-    --override-base-url http://spinnakerapi-code.cisco.com
+    --override-base-url https://spinnaker1api-code.cisco.com
 
-hal config security api edit \
-    --override-base-url https://spinnakerapi-code.cisco.com
+hal deploy apply
 ```
 
 ## Configure LDAP Authentication
