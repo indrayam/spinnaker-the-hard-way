@@ -1,4 +1,6 @@
-# Configure Persistent Storage (Minio)
+# Setup Persistent Storage (Minio)
+
+Spinnaker needs a persistent storage. Instead of using a public cloud solution (S3 or GCS), we will install and use Minio as the persistent storage.
 
 ## Create Minio Kubernetes files
 
@@ -22,7 +24,7 @@ spec:
 
 - **minio-standalone-pvc.yml:**
 
-```
+```yaml
 apiVersion: v1
 kind: PersistentVolumeClaim
 metadata:

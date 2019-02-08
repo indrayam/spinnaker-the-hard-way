@@ -1,4 +1,10 @@
-# Setup Minimal Hal Config
+# Setup Minimal Hal Configuration
+
+With `hal` installed, it's time to start building up `~/.hal/config` file. Why? Because `~/.hal/config` file is how `hal` deploys and configures Spinnaker (on Kubernetes). 
+
+How do we build up `~/.hal/config` file?
+
+We run `hal` commands to build `~/.hal/config` file. If you are interested in reviewing all `hal` commands, checkout the [Halyard Commands](https://www.spinnaker.io/reference/halyard/commands/) documentation
 
 ## Configure the Timezone
 

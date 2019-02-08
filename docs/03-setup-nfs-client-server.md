@@ -1,7 +1,9 @@
-# Setup NFS Client(s) and Server
+# Setup NFS Client(s) and Server on ENTRY VM
 
 
-## Setup NFS Server on ENTRY VM
+## Install NFS Server
+
+Run these commands on the ENTRY VM
 
 ```bash
 sudo apt-get install -y nfs-kernel-server
@@ -16,7 +18,9 @@ sudo vim /etc/exports
 sudo systemctl restart nfs-kernel-server
 ```
 
-## Setup NFS Client on all 9 Kubernetes Cluster Nodes
+## Install NFS Client 
+
+Run these commands on all 9 Kubernetes Cluster Nodes
 
 The IP address portion in this line:
 `sudo mount 192.168.1.14:/var/nfs/minio /nfs/minio`

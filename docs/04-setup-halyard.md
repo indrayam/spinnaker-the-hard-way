@@ -1,4 +1,6 @@
-## Setup Tools on ENTRY VM
+## Setup Halyard on ENTRY VM
+
+Before we install `Halyard`, we will install a slew of tools that will make us productive on the ENTRY VM.
 
 ## kubectl
 

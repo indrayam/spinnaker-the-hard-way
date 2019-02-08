@@ -1,10 +1,10 @@
-## Configure HTTPS access via TCP Proxy on ENTRY VM
+# Configure External HTTPS access
 
-**Why?**
+**Why do we need this?**
 
 To externally route Spinnaker URLs to `spin-deck` and `spin-gate` Services running within Kubernetes
 
-Let's add more color to the why.
+**Could you elaborate some more, please?**
 
 Accessing Spinnaker (or any web application) in Kubernetes needs an external "load balancer" to route requests into the cluster. Since we are setting this up ourselves, we need to do the following things to make web access possible:
 
