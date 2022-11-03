@@ -36,7 +36,7 @@ include /etc/nginx/tcppassthrough.conf;
 
 ## TCP LB and SSL passthrough
 
-Update the `/etc/nginx/tcppassthrough.conf` file with the IP addresses of the 9 Kubernetes Worker Nodes. Do not worry about the two port number stes (31092 and 31391) shown below. This will need to get updated after Heptio Contour Ingress Controller is installed (see below)
+Update the `/etc/nginx/tcppassthrough.conf` file with the IP addresses of the 9 Kubernetes Worker Nodes. Do not worry about the two port numbers (11111 and 22222) shown below. This will need to get updated after Heptio Contour Ingress Controller is installed
 
 ```bash
 ## tcp LB  and SSL passthrough for backend ##
